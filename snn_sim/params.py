@@ -13,9 +13,13 @@ np = config['neuron_params']
 ss = config['simulator_settings']
 
 # Set up circuit operating voltages
-VDD = float(gp['VDD'])
-VSS = float(gp['VSS'])
+VDD = float(ss['VDD'])
+VSS = float(ss['VSS'])
 Vt = VDD - VSS
+
+# Set up STDP and number of simulated cycles
+cycles = int(ss['cycles'])
+STDP_cycle = int(ss['STDP_cycle'])
 
 # Generate all necessary memristance parameters
 HRS = float(mp['HRS'])
@@ -49,3 +53,5 @@ M_inc = (HRS-LRS)*(delT/tswn)*(Vt/Vthn)
 # Print for verification
 print(M_dec)
 print(M_inc)
+print(cycles)
+print(STDP_cycle)
