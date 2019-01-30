@@ -24,7 +24,7 @@ for line in textfile_in:
         linecount += 1
 
 n= len(line)
-    
+
 textfile_in.close()
 
 
