@@ -9,7 +9,8 @@ from snn_components import *
 ##########################################################
 
 
-textfile_in = open("../file.txt", "r")
+# textfile_in = open("../file.txt", "r")
+textfile_in = open("../pwl_gen/out.txt", "r")
 linecount = 1
 inNeu_list=[]
 inSyn_list=[]
@@ -34,7 +35,8 @@ textfile_in.close()
 #  stores them in local memory                           #
 #                                                        #
 ##########################################################
-textfile = open("../smallnetdesc.txt", "r")
+# textfile = open("../smallnetdesc.txt", "r")
+textfile = open("../shape_recog_net.txt", "r")
 neuron_list = {}
 synapse_list = []
 input_neuron_count = 0
@@ -42,18 +44,20 @@ neuron_count = 0
 synapse_count = 0
 
 for line in textfile:
+    # print(line)
     if line[:1] == 'N':
         # Vmem fire vth refr name
         temp_line = line.rsplit(" ")
-        neuron_list[temp_line[1]] = Neuron(0, 0,  float(temp_line[2]), int(temp_line[3][:-1]), temp_line[1])
+        neuron_list[temp_line[1]] = Neuron(0, 0,  float(temp_line[2]), int(temp_line[3]), temp_line[1])
         if temp_line[1][0] == 'I':
             input_neuron_count += 1
         neuron_count += 1
         
     if line[:1] == 'S':
         temp_line = line.rsplit(" ")
+        print(temp_line)
         # Mp Mn delay N1 N2
-        temp = Synapse(float(temp_line[5][:-1])*1e3, float(temp_line[6][:-1])*1e3, int(temp_line[4][:-1]), neuron_list[temp_line[1]], neuron_list[temp_line[2]])
+        temp = Synapse(float(temp_line[5])*1e3, float(temp_line[6])*1e3, int(temp_line[4]), neuron_list[temp_line[1]], neuron_list[temp_line[2]])
         synapse_list.append(temp)
         synapse_count += 1
         
@@ -62,6 +66,8 @@ for line in textfile:
         break
 
 textfile.close()
+# print(neuron_list)
+# print(synapse_list)
 
 
 ##########################################################
@@ -116,36 +122,45 @@ for clk in range(n-1):
     for s in synapse_list:
         s.STDP(clk)
 
-output1=neuron_list['O01'].fire
-output2=neuron_list['O02'].fire
-output3=neuron_list['O03'].fire
 
-sz = len(output1)
 
-listOut=[]
+output = neuron_list['O0'].fire
+sz = len(output)
+list_out = []
 
-for i in range(150):
+# output1=neuron_list['O01'].fire
+# output2=neuron_list['O02'].fire
+# output3=neuron_list['O03'].fire
 
-    c1=sum(output1[i*15:(i+1)*15])
-    c2=sum(output2[i*15:(i+1)*15])
-    c3=sum(output3[i*15:(i+1)*15])
-    if (c3 > c1 and c3 > c2):
-        listOut.append("Iris-virginica")
-    elif (c2 > c1 and c2 > c3):
-        listOut.append("Iris-versicolor")
-    elif (c1 > c2 and c1 > c3):
-        listOut.append("Iris-setosa")
-    elif (c1 == c2 and c1>c3):
-        listOut.append("Iris-setosa")
-    elif (c2 == c3 and c2>c1):
-        listOut.append("Iris-versicolor")
-    elif (c1==c3 and c1>c3):
-        listOut.append("Iris-setosa")
-    else:
-        listOut.append("Iris-setosa")
+# sz = len(output1)
+
+# listOut=[]
+
+# for i in range(150):
+
+#     c1=sum(output1[i*15:(i+1)*15])
+#     c2=sum(output2[i*15:(i+1)*15])
+#     c3=sum(output3[i*15:(i+1)*15])
+#     if (c3 > c1 and c3 > c2):
+#         listOut.append("Iris-virginica")
+#     elif (c2 > c1 and c2 > c3):
+#         listOut.append("Iris-versicolor")
+#     elif (c1 > c2 and c1 > c3):
+#         listOut.append("Iris-setosa")
+#     elif (c1 == c2 and c1>c3):
+#         listOut.append("Iris-setosa")
+#     elif (c2 == c3 and c2>c1):
+#         listOut.append("Iris-versicolor")
+#     elif (c1==c3 and c1>c3):
+#         listOut.append("Iris-setosa")
+#     else:
+#         listOut.append("Iris-setosa")
+
+
 #    print(i, end=' ')
 #    print(listOut[-1])
-  
+
+'''  
 infile="../labels_out.txt"
       
 textfile_in = open(infile, "r")
@@ -175,3 +190,4 @@ for i in range(150):
 
 print(acc[-1])
 print(wrongI)
+'''

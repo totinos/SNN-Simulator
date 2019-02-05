@@ -21,7 +21,15 @@ Vt = VDD - VSS
 cycles = int(ss['cycles'])
 STDP_cycle = int(ss['STDP_cycle'])
 
+# Set up neuron parameters
+tper = float(np['tper'])
+cap = float(np['cap'])
+Vth = float(np['Vth'])
+Vrst = VSS + (Vt/2)
+
 # Generate all necessary memristance parameters
+Mp_in = float(mp['Mp_in'])
+Mn_in = float(mp['Mn_in'])
 HRS = float(mp['HRS'])
 LRS = float(mp['LRS'])
 tswp = float(mp['tswp'])
@@ -46,12 +54,12 @@ mu_tswp, sigma_tswp = tswp, tswp*_tswp
 mu_vtn, sigma_vtn = Vthn, Vthn*_Vthn # Is this right?
 mu_vtp, sigma_vtp = Vthp, Vthp*_Vthp # Is this right?
 
-# Memristor increase and decrease intervals
+# Memristor increase and decrease intervals <-- ARE THESE EVEN USED????
 M_dec = (HRS-LRS)*(delT/tswp)*(Vt/Vthp)
 M_inc = (HRS-LRS)*(delT/tswn)*(Vt/Vthn)
 
 # Print for verification
-print(M_dec)
-print(M_inc)
-print(cycles)
-print(STDP_cycle)
+# print(M_dec)
+# print(M_inc)
+# print(cycles)
+# print(STDP_cycle)

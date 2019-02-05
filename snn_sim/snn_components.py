@@ -1,17 +1,10 @@
 
 
+# Import parameters from params.py (must import before numpy
+# because there is a list with the name np in params.py)
 from params import *
 import numpy as np
-# from params import VDD,VSS,Vt,HRS,LRS,tswp,tswn,Vthp,Vthn,delT,mu_hrs, sigma_hrs,mu_lrs, sigma_lrs,mu_tswn, sigma_tswn,mu_tswp, sigma_tswp,mu_vtn, sigma_vtn,mu_vtp, sigma_vtp,M_dec, M_inc
 
-Mp_in = 11929.23834
-Mn_in = 12500
-
-tper = 10e-9
-cap = 2.9166e-13
-STDP_cycle = 1
-
-# n = 2250
 
 ##########################################################
 #                                                        #
@@ -35,7 +28,6 @@ class Neuron:
         self.vth = vth
         self.rf = rf
         self.Name = Name
-
         self.vmem[0] = vmem
         self.input_connections = []
         
@@ -59,6 +51,22 @@ class Neuron:
     def __str__(self):
 #        return self.Name +' Vmem = ' + str(self.vmem) + '\n' + 'Vf   = ' + str(self.fire)
         return self.Name + ' Vf = ' + str(self.fire)
+
+class Neuron2:
+    def __init__(self, nid=0, vmem=Vrst, cap=cap, vth=Vth, rf=0):
+        self.id = nid
+        self.vmem = np.zeros(cycles)
+        self.vmem[0] = vmem
+        self.fire = np.zeros(cycles)
+        self.vth = vth
+        self.rf = rf
+        self.inputs = []
+        self.outputs = []
+
+    def accum(self, clk):
+        pass
+
+
 
 
 ##########################################################
@@ -90,6 +98,9 @@ class inNeu:
     
 class Memristor:
     def __init__(self,Name):
+
+        # TODO --> Fix these to the default parameters
+        
         self.HRS = np.random.normal(mu_hrs, sigma_hrs)
         self.LRS = np.random.normal(mu_lrs, sigma_lrs)
         self.VtN = np.random.normal(mu_vtn, sigma_vtn)
