@@ -87,15 +87,10 @@ if __name__ == '__main__':
     #  Insert the desired cycle gap as well     #
     #                                           #
     #############################################
-    # Reverse the order of input spikes and insert cycle gap
-    fires = np.zeros((num_images, rows, cols*cycle_gap), dtype='int')
-    print(fires.shape)
+    fires = np.zeros((num_images, rows, cols+cycle_gap), dtype='int')
+    # print(fires.shape)
     shapes = np.flip(shapes, 2)
-    for i in range(len(shapes)):
-        for j in range(len(shapes[i])):
-            for k in range(len(shapes[i][j])):
-                # print('i, j, k:', i, j, k)
-                fires[i][j][k*cycle_gap] = shapes[i][j][k]
+    fires[:, :, :shapes.shape[2]] = shapes
 
     #############################################
     #                                           #
@@ -115,8 +110,7 @@ if __name__ == '__main__':
             of.write('\n')
 
 
-    # print(shapes)
+    # print(shapes[3])
     # print(fires)
     # print()
     # print(labels)
-    

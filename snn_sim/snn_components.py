@@ -25,7 +25,12 @@ class Neuron:
 
         # Define the starting capacitance of integrator
         #self.cap = cap
-        self.vth = vth
+
+        # Set the threshold in volts
+        self.vth = Vrst - vth * Vdiff
+        print('Name:', Name, 'vth:', self.vth)
+        # self.vth = vth
+
         self.rf = rf
         self.Name = Name
         self.vmem[0] = vmem
@@ -33,20 +38,25 @@ class Neuron:
         
     def accum1(self,clk,g):
         if 1.0 not in self.fire[max(0,clk+1-self.rf):clk+1]:
-            self.vmem[clk:] = self.vmem[clk-1] - 0.6*g[clk-1]*tper/cap
+            self.vmem[clk:] = self.vmem[clk-1] - Vdiff*g[clk-1]*tper/cap
             if self.vmem[clk] < self.vth:
                 self.fire[clk+1] = 1
                 self.vmem[clk+1:] = 0
                 
     def accum(self,clk,S):
-        if len(S) == 1:
-            if S[0].N1.fire[max(0,clk-S[0].d)] == 1:
-                self.accum1(clk,S[0].G)
-        elif len(S) == 2:
-            if S[0].N1.fire[max(0,clk-S[0].d)] == 1:
-                self.accum1(clk,S[0].G)
-            if S[1].N1.fire[max(0,clk-S[1].d)] == 1:
-                self.accum1(clk,S[1].G)
+        # if len(S) == 1:
+        #     if S[0].N1.fire[max(0,clk-S[0].d)] == 1:
+        #         self.accum1(clk,S[0].G)
+        # elif len(S) == 2:
+        #     if S[0].N1.fire[max(0,clk-S[0].d)] == 1:
+        #         self.accum1(clk,S[0].G)
+        #     if S[1].N1.fire[max(0,clk-S[1].d)] == 1:
+        #         self.accum1(clk,S[1].G)
+        for i in range(len(S)):
+            # Check if the pre-neuron for S[i] fired
+            if S[i].N1.fire[max(0, clk-S[i].d)] == 1:
+                self.accum1(clk, S[i].G)
+
                 
     def __str__(self):
 #        return self.Name +' Vmem = ' + str(self.vmem) + '\n' + 'Vf   = ' + str(self.fire)
@@ -100,7 +110,7 @@ class Memristor:
     def __init__(self,Name):
 
         # TODO --> Fix these to the default parameters
-        
+
         self.HRS = np.random.normal(mu_hrs, sigma_hrs)
         self.LRS = np.random.normal(mu_lrs, sigma_lrs)
         self.VtN = np.random.normal(mu_vtn, sigma_vtn)
@@ -139,6 +149,7 @@ class Synapse:
         self.Mp = np.ones(cycles) * Mp
         self.Mn = np.ones(cycles) * Mn
         G = 1/Mp - 1/Mn
+        self.Gm = 1/LRS - 1/HRS
         self.G = np.ones(cycles) * G
         self.d = d
         self.N1 = N1
@@ -148,7 +159,7 @@ class Synapse:
     
 
     def __str__(self):
-        return 'Geff = ' + str(self.G/Gm) + ' Connection ' + self.N1.Name+ '-->' + self.N2.Name
+        return 'Geff = ' + str(self.G/self.Gm) + ' Connection ' + self.N1.Name+ '-->' + self.N2.Name
     
     def LTP1(self,clk):
         self.Mp[clk] -= self.Memp.Mdec()

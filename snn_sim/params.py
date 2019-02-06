@@ -15,7 +15,9 @@ ss = config['simulator_settings']
 # Set up circuit operating voltages
 VDD = float(ss['VDD'])
 VSS = float(ss['VSS'])
-Vt = VDD - VSS
+Vr2r = VDD - VSS
+Vdiff = Vr2r/2
+Vt = Vr2r
 
 # Set up STDP and number of simulated cycles
 cycles = int(ss['cycles'])
