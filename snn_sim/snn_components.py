@@ -131,6 +131,22 @@ class Synapse2:
         self.pre = pre
         self.post = post
 
+    def shift_spikes(self, clk):
+        delay_len = len(self.delay)
+        if delay_len > 0:
+
+            # TODO --> Determine if this should be [clk] or [clk+1]
+            self.activity[clk+1] = self.delay[delay_len-1]
+            for i in reversed(range(1, delay_len)):
+                print(i-1)
+                self.delay[i] = self.delay[i-1]
+            # Move the fire of the pre-neuron into the delay line
+            # self.pre.fire
+        else:
+            # Copy the fire of the pre-neuron directly into the synapse activity array
+            # self.activity[clk+1] = self.pre.fire
+            pass
+
 
 
 
