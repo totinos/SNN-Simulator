@@ -31,7 +31,7 @@ for line in textfile_in:
     line = line.split() # to deal with blank 
     if line:            # lines (ie skip them)
         line = [float(i) for i in line]
-        #inp.append(line)
+        # inp.append(line)
         inNeu_list.append(inNeu(line,'inNI'+str(linecount).zfill(2)))
         inSyn_list.append(inSyn(Mp_in,Mn_in,0,inNeu_list[linecount-1]))
         linecount += 1
@@ -117,13 +117,13 @@ for ne in neuron_list:
 #  DEBUGGING - Print out neurons and synapses for tests  #
 #                                                        #
 ##########################################################
-#for ne in neuron_list:
+# for ne in neuron_list:
 #    print(ne)
 #    for s in neuron_list[ne].input_connections:
 #        print(s)
 #    print()
 #
-#for s in synapse_list:
+# for s in synapse_list:
 #    print(s)
 
 
@@ -154,7 +154,7 @@ if network == 1:
 
     listOut=[]
 
-    #----------------------------------
+    # ----------------------------------
 
     for i in range(150):
 
@@ -223,15 +223,30 @@ else:
     print(neuron_list['I0'].fire)
     print('Fires of H0')
     print(neuron_list['H0'].fire)
+
+    print('Fires of I3')
+    print(neuron_list['I3'])
+    print('Fires of I4')
+    print(neuron_list['I4'])
+
+    
     # print(neuron_list['H0'])
     print('\nVmem of H0')
     print(neuron_list['H0'].vmem)
     print()
     print(synapse_list[0])
+    print(synapse_list[3])
+    print(synapse_list[6])
+    print(synapse_list[9])
+    print(synapse_list[12])
     print(neuron_list['H0'].vth)
 
     print()
     print(output)
+
+    s2 = Synapse2(delay=3)
+    print(len(s2.delay))
+    print(len(s2.activity))
 
     # Don't really know what this is for....
     # sz = len(output)

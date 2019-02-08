@@ -44,37 +44,93 @@ class Neuron:
                 self.vmem[clk+1:] = 0
                 
     def accum(self,clk,S):
-        # if len(S) == 1:
-        #     if S[0].N1.fire[max(0,clk-S[0].d)] == 1:
-        #         self.accum1(clk,S[0].G)
-        # elif len(S) == 2:
-        #     if S[0].N1.fire[max(0,clk-S[0].d)] == 1:
-        #         self.accum1(clk,S[0].G)
-        #     if S[1].N1.fire[max(0,clk-S[1].d)] == 1:
-        #         self.accum1(clk,S[1].G)
+        
+        # # Check all of the synapses connected at the input of the neuron
+        # for i in range(len(S)):
+            
+        #     # Check if the pre-neuron for S[i] fired
+        #     if S[i].N1.fire[max(0, clk-S[i].d)] == 1:
+        #         self.accum1(clk, S[i].G)
+
+
+        # PROVE THAT THIS OCCURS EVERY CLOCK CYCLE
+        # if self.Name=='H0':
+        #     print(clk)
+
+
         for i in range(len(S)):
-            # Check if the pre-neuron for S[i] fired
+            # self.vmem[clk] = 0
             if S[i].N1.fire[max(0, clk-S[i].d)] == 1:
-                self.accum1(clk, S[i].G)
+                if 1.0 not in self.fire[max(0,clk+1-self.rf):clk+1]:
+                    # if (self.vmem[clk] == self.vmem[clk-1]):
+                    # self.vmem[clk:] = self.vmem[clk-1] - Vdiff*S[i].G[clk-1]*tper/cap
+                    # else:
+                    self.vmem[clk] -= Vdiff*S[i].G[clk-1]*tper/cap
+                    self.vmem[clk+1:] = self.vmem[clk]
+                    # self.vmem[clk:] = self.vmem[clk]
+                    if self.vmem[clk] < self.vth:
+                        self.fire[clk+1] = 1
+                        self.vmem[clk+1:] = 0
+            # if (self.Name == 'H0'):
+            #     print('clk:', clk, self.vmem[clk])
+            # # if (self.vmem[clk] != 0):
+            # self.vmem[clk:] = self.vmem[clk-1] + self.vmem[clk]
 
                 
     def __str__(self):
 #        return self.Name +' Vmem = ' + str(self.vmem) + '\n' + 'Vf   = ' + str(self.fire)
         return self.Name + ' Vf = ' + str(self.fire)
 
+
+################## HOW DOES DELAY WORK IN THE FRAMEWORK? --> Does the delay
+# happen before the memristive part of the synapse, or does it happen after?
+# Can there be more than one spike in a synapse at any given time?
+
 class Neuron2:
     def __init__(self, nid=0, vmem=Vrst, cap=cap, vth=Vth, rf=0):
-        self.id = nid
-        self.vmem = np.zeros(cycles)
-        self.vmem[0] = vmem
-        self.fire = np.zeros(cycles)
-        self.vth = vth
-        self.rf = rf
-        self.inputs = []
-        self.outputs = []
+        
+
+        # Set refractory to 0 when not in ref period,
+        # If you are in refractory period, then this
+        # variable holds the number of cycles that
+        # remain in the ref period
+        self.refractory = rf
+        self.refractory_cycles_left = 0
+
+        # Holds a list of synapses that are connected at the input of the neuron
+        self.in_syn_list = []
+
+        self.out_fire_buf = 0
+
 
     def accum(self, clk):
-        pass
+
+        for synapse in in_syn_list:
+
+            # Check to see if the neuron can accumulate charge
+            if synapse.activity[clk] and self.refractory_cycles_left == 0:
+                # self.Vmem[clk] -= Vdiff*synapse.G[clk]
+
+                # Check to see if the neuron can fire
+                if self.Vmem[clk] < self.Vth:
+                    self.fire[clk+1] = 1
+                    self.Vmem[clk+1] = 0
+                    self.refractory_cycles_left = self.refractory
+
+            # Still in the refractory period, wait a cycle
+            elif self.refractory_cycles_left > 0:
+                self.refractory_cycles_left -= 1
+
+        return
+
+class Synapse2:
+    def __init__(self, sid=0, Mp=25e3, Mn=25e3, delay=0, pre=-1, post=-1):
+        self.delay = [0]*delay
+        self.activity = [0]*cycles
+        # OTHER PARAMETERS
+        self.pre = pre
+        self.post = post
+
 
 
 
@@ -111,12 +167,20 @@ class Memristor:
 
         # TODO --> Fix these to the default parameters
 
-        self.HRS = np.random.normal(mu_hrs, sigma_hrs)
-        self.LRS = np.random.normal(mu_lrs, sigma_lrs)
-        self.VtN = np.random.normal(mu_vtn, sigma_vtn)
-        self.VtP = np.random.normal(mu_vtp, sigma_vtp)
-        self.tswN = np.random.normal(mu_tswn, sigma_tswn)
-        self.tswP = np.random.normal(mu_tswp, sigma_tswp)
+        # self.HRS = np.random.normal(mu_hrs, sigma_hrs)
+        # self.LRS = np.random.normal(mu_lrs, sigma_lrs)
+        # self.VtN = np.random.normal(mu_vtn, sigma_vtn)
+        # self.VtP = np.random.normal(mu_vtp, sigma_vtp)
+        # self.tswN = np.random.normal(mu_tswn, sigma_tswn)
+        # self.tswP = np.random.normal(mu_tswp, sigma_tswp)
+        # self.Name = Name
+
+        self.HRS = HRS
+        self.LRS = LRS
+        self.VtN = Vthn
+        self.VtP = Vthp
+        self.tswN = tswn
+        self.tswP = tswp
         self.Name = Name
         
     def __str__(self):
@@ -159,7 +223,8 @@ class Synapse:
     
 
     def __str__(self):
-        return 'Geff = ' + str(self.G/self.Gm) + ' Connection ' + self.N1.Name+ '-->' + self.N2.Name
+        # return 'Geff = ' + str(self.G/self.Gm) + ' Connection ' + self.N1.Name+ '-->' + self.N2.Name
+        return 'Geff = ' + str(self.G[0]) + ' Connection ' + self.N1.Name+ '-->' + self.N2.Name
     
     def LTP1(self,clk):
         self.Mp[clk] -= self.Memp.Mdec()
