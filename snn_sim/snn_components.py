@@ -104,8 +104,10 @@ class Neuron2:
         self.in_syn_list = []
 
         # Create lists to store vmem values and neuron activity
-        self.Vmem = [vmem]*cycles
-        self.fire = [0]*cycles
+        # self.Vmem = [vmem]*cycles
+        self.Vmem = np.ones(cycles) * vmem
+        # self.fire = [0]*cycles
+        self.fire = np.zeros(cycles)
 
 
         # self.out_fire_buf = 0
@@ -116,10 +118,13 @@ class Neuron2:
         for synapse in in_syn_list:
 
             # Check to see if the neuron can accumulate charge
-            if synapse.activity[clk] and self.refractory_cycles_left == 0:
+            if synapse.activity[clk] != 0 and self.refractory_cycles_left == 0:
 
                 # TODO --> Make this update correct
                 # self.Vmem[clk] -= Vdiff*synapse.G[clk]
+                # Essentially delta_t*current/C = delta_v
+                delta_Vmem = tper * synapse.activity[clk] / self.cap
+                self.Vmem[clk] -= delta_Vmem
 
                 # Check to see if the neuron can fire
                 if self.Vmem[clk] < self.Vth:
@@ -133,25 +138,45 @@ class Neuron2:
 
             # TODO --> Think more about this and maybe implement it
             # Take into account leakage current????
+            # For now, Vmem stays constant whenever it does not accumulate
             else:
-                pass
+                self.Vmem[clk+1] = self.Vmem[clk]
 
         return
 
 class Synapse2:
     def __init__(self, Mp=25e3, Mn=25e3, delay=0, pre=None, post=None):
         self.delay = [0]*delay
-        self.activity = [0]*cycles
+        # self.activity = [0]*cycles
+        self.activity = np.zeros(cycles)
         # OTHER PARAMETERS
         self.pre = pre
         self.post = post
+
+        self.Gmax = 1/LRS - 1/HRS
+        self.G = np.ones(cycles) * (1/Mp - 1/Mn)
+
+        #######################
+        # FROM THE OLD SYNAPSE
+        #######################
+        # self.Mp = np.ones(cycles) * Mp
+        # self.Mn = np.ones(cycles) * Mn
+        # G = 1/Mp - 1/Mn
+        # self.Gm = 1/LRS - 1/HRS
+        # self.G = np.ones(cycles) * G
+        # self.d = d
+        # self.N1 = N1
+        # self.N2 = N2
+        # self.Memp = Memristor('Mp_'+ self.N1.Name + '-->' + self.N2.Name)
+        # self.Memn = Memristor('Mn_'+ self.N1.Name + '-->' + self.N2.Name)
+
 
     def shift_spikes(self, clk):
         delay_len = len(self.delay)
         if delay_len > 0:
 
             # TODO --> Determine if this should be [clk] or [clk+1]
-            self.activity[clk+1] = self.delay[delay_len-1]
+            self.activity[clk] = self.delay[delay_len-1] * (Vr2r * self.G[clk])
             for i in reversed(range(1, delay_len)):
                 print(i-1)
                 self.delay[i] = self.delay[i-1]
