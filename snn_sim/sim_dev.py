@@ -35,10 +35,17 @@ for line in lines:
 
     # input_neuron = inNeu(line, "STR")
     # input_synapse = inSyn(Mp_in, Mn_in, 0, input_neuron)
+
+    # Create an input neuron and synapse, the post-neuron of the synapse is as yet unknown
     input_neuron = InputNeuron(line, "NAME")
     input_synapse = InputSynapse(Mp_in, Mn_in, 0, input_neuron, None)
     input_neuron_list.append(input_neuron)
     input_synapse_list.append(input_synapse)
+
+    print(np.array(line))
+
+SIM_CYCLES = len(line)
+print(SIM_CYCLES)
 
 
 
@@ -51,6 +58,9 @@ with open(network_file, 'r') as f:
 
 neuron_dict = {}
 synapse_list = []
+
+# UNTIL I KNOW HOW THIS ACTUALLY WORKS
+count = 0
 
 for line in lines:
     line = line.replace('\n', '')
@@ -85,17 +95,20 @@ for line in lines:
         # Add connected synapses to each neuron (full model of connectivity)
         post.in_syn_list.append(syn)
 
-    ########%%%%%^^^^^^^###########%%
-    # TODO --> Check how this is supposed to work with Nick or Adnan ####-----//////////$$$$$$$$$$$%%%%%%%%?????
+    #####################################################################
+    # TODO --> Check how this is supposed to work with Nick or Adnan 
     #####################################################################
     # Determine if an input needs to be connected to a neuron
     elif line[0] == 'INPUT':
         print('Input is connected to', line[2])
         neuron = neuron_dict[line[2]]
-        index = int(line[1])
+        # index = int(line[1])
+        index = count
+        count += 1
         input_synapse = input_synapse_list[index]
         input_synapse.post = neuron
         neuron.in_syn_list.append(input_synapse)
+        synapse_list.append(input_synapse)
 
 
 
@@ -119,4 +132,18 @@ for line in lines:
 for neuron in neuron_dict:
     print(neuron_dict[neuron].name)
     for synapse in neuron_dict[neuron].in_syn_list:
-        print('  ', synapse.pre.name, synapse.post.name)
+        print('  ', synapse.pre.name, '->', synapse.post.name)
+
+
+# Use the -1 for now because we are setting clk+1 a few places in the simulation
+for clk in range(SIM_CYCLES-1):
+    for neuron in neuron_dict:
+        neuron_dict[neuron].accum(clk)
+    for synapse in synapse_list:
+        # print(synapse.pre.name)
+        synapse.shift_spikes(clk)
+
+for synapse in synapse_list:
+    print('Pre-name:', synapse.pre.name, 'Activity:', synapse.activity)
+
+print(neuron_dict['O03'].Vmem)

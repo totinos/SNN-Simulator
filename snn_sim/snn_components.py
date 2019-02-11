@@ -115,7 +115,7 @@ class Neuron2:
 
     def accum(self, clk):
 
-        for synapse in in_syn_list:
+        for synapse in self.in_syn_list:
 
             # Check to see if the neuron can accumulate charge
             if synapse.activity[clk] != 0 and self.refractory_cycles_left == 0:
@@ -186,7 +186,8 @@ class Synapse2:
             # Copy the fire of the pre-neuron directly into the synapse activity array
             # TODO --> check that the clock cycle here is correct
             # self.activity[clk+1] = self.pre.fire
-            pass
+            self.activity[clk] = self.pre.fire[clk] * (Vr2r * self.G[clk])
+            # pass
 
 class InputNeuron:
     def __init__(self, fire, name):
@@ -202,6 +203,10 @@ class InputSynapse:
         self.delay = delay
         self.pre = pre
         self.post = post
+        self.activity = np.zeros(cycles)
+
+    def shift_spikes(self, clk):
+        self.activity[clk] = self.pre.fire[clk] * (Vr2r * self.G[clk])
 
 
 
