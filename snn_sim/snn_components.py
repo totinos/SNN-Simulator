@@ -87,8 +87,11 @@ class Neuron:
 # Can there be more than one spike in a synapse at any given time?
 
 class Neuron2:
-    def __init__(self, nid=0, vmem=Vrst, cap=cap, vth=Vth, rf=0):
+    def __init__(self, name="N0", vmem=Vrst, vth=0, rf=0, cap=cap):
         
+        self.name = name
+        self.cap = cap
+        self.Vth = Vrst - vth * Vdiff
 
         # Set refractory to 0 when not in ref period,
         # If you are in refractory period, then this
@@ -100,7 +103,12 @@ class Neuron2:
         # Holds a list of synapses that are connected at the input of the neuron
         self.in_syn_list = []
 
-        self.out_fire_buf = 0
+        # Create lists to store vmem values and neuron activity
+        self.Vmem = [vmem]*cycles
+        self.fire = [0]*cycles
+
+
+        # self.out_fire_buf = 0
 
 
     def accum(self, clk):
@@ -109,6 +117,8 @@ class Neuron2:
 
             # Check to see if the neuron can accumulate charge
             if synapse.activity[clk] and self.refractory_cycles_left == 0:
+
+                # TODO --> Make this update correct
                 # self.Vmem[clk] -= Vdiff*synapse.G[clk]
 
                 # Check to see if the neuron can fire
@@ -121,10 +131,15 @@ class Neuron2:
             elif self.refractory_cycles_left > 0:
                 self.refractory_cycles_left -= 1
 
+            # TODO --> Think more about this and maybe implement it
+            # Take into account leakage current????
+            else:
+                pass
+
         return
 
 class Synapse2:
-    def __init__(self, sid=0, Mp=25e3, Mn=25e3, delay=0, pre=-1, post=-1):
+    def __init__(self, Mp=25e3, Mn=25e3, delay=0, pre=None, post=None):
         self.delay = [0]*delay
         self.activity = [0]*cycles
         # OTHER PARAMETERS
@@ -141,11 +156,29 @@ class Synapse2:
                 print(i-1)
                 self.delay[i] = self.delay[i-1]
             # Move the fire of the pre-neuron into the delay line
-            # self.pre.fire
+            self.delay[0] = self.pre.fire[clk]
         else:
             # Copy the fire of the pre-neuron directly into the synapse activity array
+            # TODO --> check that the clock cycle here is correct
             # self.activity[clk+1] = self.pre.fire
             pass
+
+class InputNeuron:
+    def __init__(self, fire, name):
+        self.fire = fire
+        self.name = name
+
+class InputSynapse:
+    def __init__(self, Mp=25e3, Mn=25e3, delay=0, pre=None, post=None):
+        self.Mp = Mp
+        self.Mn = Mn
+        G = 1/Mp - 1/Mn
+        self.G = np.ones(cycles) * G
+        self.delay = delay
+        self.pre = pre
+        self.post = post
+
+
 
 
 
