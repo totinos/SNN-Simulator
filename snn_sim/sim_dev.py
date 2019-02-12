@@ -192,12 +192,13 @@ np.set_printoptions(precision=2)
 # plt.show()
 
 
-print('I0 fire:', neuron_dict['I0'].fire)
-print('I0 Vmem:', neuron_dict['I0'].Vmem)
-print()
-print('I1 fire:', neuron_dict['I1'].fire)
-print('I1 Vmem:', neuron_dict['I1'].Vmem)
-print()
+# print('I0 fire:', neuron_dict['I0'].fire)
+# print('I0 Vmem:', neuron_dict['I0'].Vmem)
+# print()
+# print('I1 fire:', neuron_dict['I1'].fire)
+# print('I1 Vmem:', neuron_dict['I1'].Vmem)
+# print()
+
 # print(neuron_dict['O0'].in_syn_list[0].activity)
 # print(neuron_dict['O0'].in_syn_list[1].activity)
 # print(neuron_dict['O0'].in_syn_list[2].activity)
@@ -211,3 +212,7 @@ print('H2 Vmem:', neuron_dict['H2'].Vmem)
 print('O0 fire:', neuron_dict['O0'].fire)
 print('O0 Vmem:', neuron_dict['O0'].Vmem)
 
+print(Vrst)
+h2 = neuron_dict['H2']
+print(h2.fire[10:23])
+print(h2.Vmem[17])

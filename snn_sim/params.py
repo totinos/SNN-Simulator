@@ -27,7 +27,7 @@ STDP_cycle = int(ss['STDP_cycle'])
 tper = float(np['tper'])
 cap = float(np['cap'])
 Vth = float(np['Vth'])
-Vrst = VSS + (Vt/2)
+Vrst = VSS + Vdiff
 
 # Generate all necessary memristance parameters
 Mp_in = float(mp['Mp_in'])

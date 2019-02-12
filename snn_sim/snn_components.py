@@ -57,8 +57,13 @@ class Neuron:
 
     def accum(self, clk):
 
+        # TODO --> This function heavily depends on each consecutive call of accum
+        #          being for the next consecutive clock cycle, probably won't work otherwise
+
+        # If the neuron is in the refractory period, the neuron cannot accumulate
         # Vmem should always be at reset voltage when in refractory period
         # Does not account for leakage current
+        #      Does leakage current matter when Vmem is at Vrst level?
         if self.refractory_cycles_left > 0:
             self.refractory_cycles_left -= 1
             return
@@ -66,54 +71,38 @@ class Neuron:
         # Loop through the connected synapses to accumulate charge
         for synapse in self.in_syn_list:
 
-            # if (clk == 0):
-            #     print(synapse.pre.name, '->', synapse.post.name)
-            #     print('   ', synapse.activity[clk], self.refractory_cycles_left)
-            # if self.name == 'O0' and self.fire[clk] == 1:
-            #     print('================')
-            #     print(self.refractory_cycles_left)
-            #     print(synapse.activity[clk])
-
             # Check to see if the neuron can accumulate charge
             if synapse.activity[clk] != 0:
 
-                # TODO --> Make this update correct
-                # self.Vmem[clk] -= Vdiff*synapse.G[clk]
                 # Essentially delta_t*current/C = delta_v
                 delta_Vmem = tper * synapse.activity[clk] / self.cap
                 self.Vmem[clk] -= delta_Vmem
 
-                # Check to see if the neuron can fire
+                # Boundary condition when Vmem hits a rail
+                if self.Vmem[clk] < VSS:
+                    self.Vmem[clk] = VSS
+                if self.Vmem[clk] > VDD:
+                    self.Vmem[clk] = VDD
+
+                # Check to see if the neuron should fire
+                # If so, reset Vmem and enter refractory period, no need to accumulate further
+                # TODO --> Is returning like this an optimization? (AKA should I keep it)
                 if self.Vmem[clk] < self.Vth:
                     self.fire[clk+1] = 1
                     self.Vmem[clk+1] = Vrst
                     self.refractory_cycles_left = self.refractory
+                    return
 
-                    # if self.name == 'O0':
-                    #     print('O0 is firing:')
-                    #     print(self.refractory)
-                    #     print(self.Vmem[clk])
-                    #     print(self.Vmem[clk+1])
-                    break
-
-            # TODO --> Think more about this and maybe implement it
-            # Take into account leakage current????
-            # For now, Vmem stays constant whenever it does not accumulate
+            # TODO --> Should anything happen here?
             else:
-                self.Vmem[clk+1] = self.Vmem[clk]
+                pass
 
-            # if self.name == 'O0' and self.refractory_cycles_left == 1:
-            #     print("A SELF CHECK...")
-            #     print(self.Vmem[clk])
-            #     print(self.Vmem[clk+1])
-            # elif self.name == 'O0' and self.fire[clk] == 1:
-            #     print("###############")
-            #     print(self.Vmem[clk])
-            #     print(self.Vmem[clk+1])
+        # TODO --> Implement leakage current calculation here?
+        # Copy the Vmem for this clock cycle to the vmem for the next cycle       
+        self.Vmem[clk+1] = self.Vmem[clk]
 
         return
 
-    # def get_refractory_status(self, clk):
 
 ##########################################################
 #                                                        #
@@ -148,11 +137,16 @@ class Synapse:
 
 
     def shift_spikes(self, clk):
+
+        # Find length of delay line and magnitude of output current
         delay_len = len(self.delay)
+        current = Vr2r * self.G[clk]
+
+        # If delay == 0, there's no need to shift through the delay line
         if delay_len > 0:
 
             # TODO --> Determine if this should be [clk] or [clk+1]
-            self.activity[clk] = self.delay[delay_len-1] * (Vr2r * self.G[clk])
+            self.activity[clk] = self.delay[delay_len-1] * current
             for i in reversed(range(1, delay_len)):
                 # print(i-1)
                 self.delay[i] = self.delay[i-1]
@@ -162,7 +156,7 @@ class Synapse:
             # Copy the fire of the pre-neuron directly into the synapse activity array
             # TODO --> check that the clock cycle here is correct
             # self.activity[clk+1] = self.pre.fire
-            self.activity[clk] = self.pre.fire[clk] * (Vr2r * self.G[clk])
+            self.activity[clk] = self.pre.fire[clk] * current
             # pass
 
 
