@@ -1,6 +1,8 @@
 import sys
 from snn_components import *
 
+import matplotlib.pyplot as plt
+
 network_file = sys.argv[1]
 print(network_file)
 
@@ -37,8 +39,9 @@ for line in lines:
     # input_synapse = inSyn(Mp_in, Mn_in, 0, input_neuron)
 
     # Create an input neuron and synapse, the post-neuron of the synapse is as yet unknown
-    input_neuron = InputNeuron(line, "NAME")
-    input_synapse = InputSynapse(Mp_in, Mn_in, 0, input_neuron, None)
+    input_neuron = InputNeuron(line, "INP")
+    # input_synapse = InputSynapse(Mp_in, Mn_in, 0, input_neuron, None)
+    input_synapse = Synapse(Mp_in, Mn_in, 0, input_neuron, None)
     input_neuron_list.append(input_neuron)
     input_synapse_list.append(input_synapse)
 
@@ -74,8 +77,7 @@ for line in lines:
         fire = 0
         threshold = float(line[2])
         refractory = int(line[3])
-        # neuron_dict[name] = Neuron(0,0,threshold, refractory, name)
-        neuron_dict[name] = Neuron2(name, Vmem, threshold, refractory)
+        neuron_dict[name] = Neuron(name, Vmem, threshold, refractory)
     
     # Read in a synapse and create it
     elif line[0] == 'S':
@@ -88,8 +90,7 @@ for line in lines:
         delay = int(line[4])
         wp = float(line[5])*1e3 # TODO --> Right place to do this conversion???
         wn = float(line[6])*1e3
-        # syn = Synapse(wp, wn, delay, pre, post)
-        syn = Synapse2(wp, wn, delay, pre, post)
+        syn = Synapse(wp, wn, delay, pre, post)
         synapse_list.append(syn)
 
         # Add connected synapses to each neuron (full model of connectivity)
@@ -129,21 +130,84 @@ for line in lines:
 #     neuron.in_syn_list.append(synapse)
 
 # Print out the connectivity of the network
+print('--------------------')
 for neuron in neuron_dict:
     print(neuron_dict[neuron].name)
     for synapse in neuron_dict[neuron].in_syn_list:
         print('  ', synapse.pre.name, '->', synapse.post.name)
+print('--------------------')
 
 
 # Use the -1 for now because we are setting clk+1 a few places in the simulation
+# Synapses are processed before neurons because synapse activity is instantaneous
+# whereas neuron outputs are buffered by a DFF
 for clk in range(SIM_CYCLES-1):
-    for neuron in neuron_dict:
-        neuron_dict[neuron].accum(clk)
     for synapse in synapse_list:
         # print(synapse.pre.name)
         synapse.shift_spikes(clk)
+    for neuron in neuron_dict:
+        neuron_dict[neuron].accum(clk)
+        # print(neuron_dict[neuron].name)
+    
 
-for synapse in synapse_list:
-    print('Pre-name:', synapse.pre.name, 'Activity:', synapse.activity)
+np.set_printoptions(precision=2)
+# for synapse in synapse_list:
+#     print('Pre-name:', synapse.pre.name)
+#     print('    Activity: ', synapse.activity)
+#     print('    Post-Vmem:', synapse.post.Vmem)
+#     print('    Post-fire:', synapse.post.fire)
 
-print(neuron_dict['O03'].Vmem)
+# Print and plot some results to check functionality of network
+# print('O03 fire:', neuron_dict['O03'].fire)
+# print('O03 Vmem:', neuron_dict['O03'].Vmem)
+# print('I07 fire:', neuron_dict['I07'].fire)
+# print('I07 Vmem:', neuron_dict['I07'].Vmem)
+
+# plt.figure()
+# plt.subplot(311)
+# plt.plot(neuron_dict['O01'].fire)
+
+# plt.subplot(312)
+# plt.plot(neuron_dict['O02'].fire)
+
+# plt.subplot(313)
+# plt.plot(neuron_dict['O03'].fire)
+
+# plt.figure()
+# plt.subplot(711)
+# plt.plot(neuron_dict['I01'].fire)
+# plt.subplot(712)
+# plt.plot(neuron_dict['I02'].fire)
+# plt.subplot(713)
+# plt.plot(neuron_dict['I03'].fire)
+# plt.subplot(714)
+# plt.plot(neuron_dict['I04'].fire)
+# plt.subplot(715)
+# plt.plot(neuron_dict['I05'].fire)
+# plt.subplot(716)
+# plt.plot(neuron_dict['I06'].fire)
+# plt.subplot(717)
+# plt.plot(neuron_dict['I07'].fire)
+
+# plt.show()
+
+
+print('I0 fire:', neuron_dict['I0'].fire)
+print('I0 Vmem:', neuron_dict['I0'].Vmem)
+print()
+print('I1 fire:', neuron_dict['I1'].fire)
+print('I1 Vmem:', neuron_dict['I1'].Vmem)
+print()
+# print(neuron_dict['O0'].in_syn_list[0].activity)
+# print(neuron_dict['O0'].in_syn_list[1].activity)
+# print(neuron_dict['O0'].in_syn_list[2].activity)
+
+
+print('H2 threshold:', neuron_dict['H2'].Vth)
+print('H2 fire:', neuron_dict['H2'].fire)
+print('H2 Vmem:', neuron_dict['H2'].Vmem)
+
+
+print('O0 fire:', neuron_dict['O0'].fire)
+print('O0 Vmem:', neuron_dict['O0'].Vmem)
+
