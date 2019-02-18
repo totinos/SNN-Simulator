@@ -18,8 +18,6 @@ print(input_file)
 # Read the input file into a list of lines
 with open(input_file, 'r') as f:
     lines = f.readlines()
-# print(len(lines))
-
 
 input_neuron_list = []
 input_synapse_list = []
@@ -28,15 +26,8 @@ input_synapse_list = []
 for line in lines:
     line = line.replace(' \n', '')
     line = line.replace('\n', '')
-    # print(line)
     line = line.split(' ')
-    # print(line)
     line = [int(i) for i in line]
-    # print(line)
-    # exit()
-
-    # input_neuron = inNeu(line, "STR")
-    # input_synapse = inSyn(Mp_in, Mn_in, 0, input_neuron)
 
     # Create an input neuron and synapse, the post-neuron of the synapse is as yet unknown
     input_neuron = InputNeuron(line, "INP")
@@ -77,7 +68,7 @@ for line in lines:
         fire = 0
         threshold = float(line[2])
         refractory = int(line[3])
-        neuron_dict[name] = Neuron(name, Vmem, threshold, refractory)
+        neuron_dict[name] = StochasticNeuron(name, Vmem, threshold, refractory)
     
     # Read in a synapse and create it
     elif line[0] == 'S':
@@ -103,9 +94,8 @@ for line in lines:
     elif line[0] == 'INPUT':
         print('Input is connected to', line[2])
         neuron = neuron_dict[line[2]]
-        # index = int(line[1])
         index = count
-        count += 1
+        count += 1 # TODO --> FIX THIS (Or rather just don't use it)
         input_synapse = input_synapse_list[index]
         input_synapse.post = neuron
         neuron.in_syn_list.append(input_synapse)
@@ -122,12 +112,6 @@ for line in lines:
     else:
         pass
 
-# TODO --> Use this section for updated neuron/synapse model (full connectivity)
-# Add connected synapses to each neuron
-
-# for synapse in synapse_list:
-#     neuron = synapse.post
-#     neuron.in_syn_list.append(synapse)
 
 # Print out the connectivity of the network
 print('--------------------')
@@ -141,21 +125,19 @@ print('--------------------')
 # Use the -1 for now because we are setting clk+1 a few places in the simulation
 # Synapses are processed before neurons because synapse activity is instantaneous
 # whereas neuron outputs are buffered by a DFF
-for clk in range(SIM_CYCLES-1):
+for clk in range(SIM_CYCLES-2):
     for synapse in synapse_list:
-        # print(synapse.pre.name)
         synapse.shift_spikes(clk)
     for neuron in neuron_dict:
         neuron_dict[neuron].accum(clk)
-        # print(neuron_dict[neuron].name)
     
 
 np.set_printoptions(precision=2)
-# for synapse in synapse_list:
-#     print('Pre-name:', synapse.pre.name)
-#     print('    Activity: ', synapse.activity)
-#     print('    Post-Vmem:', synapse.post.Vmem)
-#     print('    Post-fire:', synapse.post.fire)
+
+
+###########################################################
+# This section is for testing iris network
+###########################################################
 
 # Print and plot some results to check functionality of network
 # print('O03 fire:', neuron_dict['O03'].fire)
@@ -192,6 +174,10 @@ np.set_printoptions(precision=2)
 # plt.show()
 
 
+###########################################################
+# This section is for testing shape recognition network
+###########################################################
+
 # print('I0 fire:', neuron_dict['I0'].fire)
 # print('I0 Vmem:', neuron_dict['I0'].Vmem)
 # print()
@@ -204,15 +190,124 @@ np.set_printoptions(precision=2)
 # print(neuron_dict['O0'].in_syn_list[2].activity)
 
 
-print('H2 threshold:', neuron_dict['H2'].Vth)
-print('H2 fire:', neuron_dict['H2'].fire)
-print('H2 Vmem:', neuron_dict['H2'].Vmem)
+# H0 = neuron_dict['H0']
+# print('H0 threshold:', H0.Vth)
+# print()
+# print('H0 fire:', H0.fire)
+# print()
+# print('H0 Vmem:', H0.Vmem)
+# print()
 
 
-print('O0 fire:', neuron_dict['O0'].fire)
-print('O0 Vmem:', neuron_dict['O0'].Vmem)
+# H1 = neuron_dict['H1']
+# print('H1 threshold:', H1.Vth)
+# print()
+# print('H1 fire:', H1.fire)
+# print()
+# print('H1 Vmem:', H1.Vmem)
+# print()
 
-print(Vrst)
-h2 = neuron_dict['H2']
-print(h2.fire[10:23])
-print(h2.Vmem[17])
+
+# H2 = neuron_dict['H2']
+# print('H2 threshold:', H2.Vth)
+# print()
+# print('H2 fire:', H2.fire)
+# print()
+# print('H2 Vmem:', H2.Vmem)
+# print()
+
+
+# O0 = neuron_dict['O0']
+# print('O0 threshold:', O0.Vth)
+# print()
+# print('O0 fire:', O0.fire)
+# print()
+# print('O0 Vmem:', O0.Vmem)
+# print()
+
+
+# O0 = neuron_dict['O0']
+# print('O0 fire:', O0.fire)
+# print('O0 Vmem:', O0.Vmem)
+
+
+###########################################################
+# This section is for testing test_net network
+###########################################################
+
+
+# print()
+# I0 = neuron_dict['I0']
+# print('I0 threshold:', I0.Vth)
+# print('I0 fire:', I0.fire)
+# print('I0 Vmem:', I0.Vmem)
+# print()
+
+# I1 = neuron_dict['I1']
+# print('I1 threshold:', I1.Vth)
+# print('I1 fire:', I1.fire)
+# print('I1 Vmem:', I1.Vmem)  
+# print()
+
+# I2 = neuron_dict['I2']
+# print('I2 threshold:', I2.Vth)
+# print('I2 fire:', I2.fire)
+# print('I2 Vmem:', I2.Vmem)  
+# print()
+
+# I3 = neuron_dict['I3']
+# print('I3 threshold:', I3.Vth)
+# print('I3 fire:', I3.fire)
+# print('I3 Vmem:', I3.Vmem)  
+# print()
+
+# I4 = neuron_dict['I4']
+# print('I4 threshold:', I4.Vth)
+# print('I4 fire:', I4.fire)
+# print('I4 Vmem:', I4.Vmem)  
+# print()
+
+# H0 = neuron_dict['H0']
+# print('H0 threshold:', H0.Vth)
+# print('H0 fire:', H0.fire)
+# print('H0 Vmem:', H0.Vmem)
+# print()
+
+# H1 = neuron_dict['H1']
+# print('H1 threshold:', H1.Vth)
+# print('H1 fire:', H1.fire)
+# print('H1 Vmem:', H1.Vmem)
+# print()
+
+# H2 = neuron_dict['H2']
+# print('H2 threshold:', H2.Vth)
+# print('H2 fire:', H2.fire)
+# print('H2 Vmem:', H2.Vmem)
+# print()
+
+# O0 = neuron_dict['O0']
+# print('O0 threshold:', O0.Vth)
+# print('O0 fire:', O0.fire)
+# print('O0 Vmem:', O0.Vmem)
+
+# # print()
+# # print("O0 Output for each shape:")
+# # for i in range(5):
+# #     print("  ", end="")
+# #     for j in range(14):
+# #         print("{} ".format(O0.fire[i*j + j]), end="")
+# #     print()
+
+# for synapse in synapse_list:
+#     if (synapse.pre.name == "H0" or synapse.pre.name == "H1") and synapse.post.name == "O0":
+#         print(synapse.pre.name, "->", synapse.post.name)
+#         print(synapse.delay)
+#         print("    synapse activity:  {}".format(synapse.activity))
+#     if (synapse.pre.name == "I4") and synapse.post.name == "H0":
+#         print(synapse.pre.name, "->", synapse.post.name)
+#         print(synapse.delay)
+#         print("    synapse activity:  {}".format(synapse.activity))
+
+print('--------------------')
+print(int(neuron_dict['O0'].fire[14]))
+

@@ -18,6 +18,7 @@ VSS = float(ss['VSS'])
 Vr2r = VDD - VSS
 Vdiff = Vr2r/2
 Vt = Vr2r
+clk_per_del = int(ss['clk_per_del'])
 
 # Set up STDP and number of simulated cycles
 cycles = int(ss['cycles'])
@@ -26,6 +27,9 @@ STDP_cycle = int(ss['STDP_cycle'])
 # Set up neuron parameters
 tper = float(np['tper'])
 cap = float(np['cap'])
+c1 = float(np['c1'])
+c2 = float(np['c2'])
+c3 = float(np['c3'])
 Vth = float(np['Vth'])
 Vrst = VSS + Vdiff
 
