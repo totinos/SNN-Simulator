@@ -147,13 +147,13 @@ if __name__ == '__main__':
 
     # TODO --> Make the noise additions more modular/user friendly
 
-    num_noise_bits = 1
+    num_noise_bits = 3
     # print("length:", len(shapes))
     starting_len = len(shapes)
     # print(shapes)
     # print_shapes(shapes)
 
-    for i in range(96):
+    for i in range(97):
         shape_index = np.random.randint(starting_len)
         # print("index of shape:", shape_index)
         new_shape = add_noise(shapes[shape_index], num_noise_bits)
