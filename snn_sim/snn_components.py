@@ -24,10 +24,9 @@ import numpy as np
 # Can there be more than one spike in a synapse at any given time?
 
 class Neuron:
-    def __init__(self, name="N0", vmem=Vrst, vth=0, rf=0, cap=cap):
+    def __init__(self, name="N0", vmem=Vrst, vth=0, rf=0, cap=cap, stochastic=False):
         
         self.name = name
-        self.cap = cap
         self.Vth = Vrst - vth * Vdiff
 
         # Set refractory to 0 when not in ref period,
@@ -45,6 +44,18 @@ class Neuron:
         self.Vmem = np.ones(cycles) * vmem
         # self.fire = [0]*cycles
         self.fire = np.zeros(cycles)
+        # self.power_stages = np.zeros(cycles, dtype='|S1')
+        self.power_stages = [0]*cycles
+
+        if stochastic == True:
+            self.cap = cap + 2e-12
+            self.cap_mask = 0
+            self.c1_mask = 1 # Binary 0b0001
+            self.c2_mask = 3 # Binary 0b0010
+            self.c3_mask = 5 # Binary 0b0100
+        else:
+            self.cap = cap
+
 
 
     def accum(self, clk):
@@ -62,6 +73,14 @@ class Neuron:
         #      Does leakage current matter when Vmem is at Vrst level?
         if self.refractory_cycles_left > 0:
             self.refractory_cycles_left -= 1
+
+            # If the neuron is not firing this cycle, it is idle
+            if self.fire[clk+1] == 1:
+                self.power_stages[clk] = 'F'
+            else:
+                self.power_stages[clk] = 'I'
+            # self.power_stages[clk] = 'R'
+
             return
 
         # Loop through the connected synapses to accumulate charge
@@ -69,6 +88,9 @@ class Neuron:
 
             # Check to see if the neuron can accumulate charge
             if synapse.activity[clk] != 0:
+
+                # The neuron is accumulating
+                self.power_stages[clk] = 'A'
 
                 # Essentially delta_t*current/C = delta_v
                 delta_Vmem = tper * synapse.activity[clk] / self.cap
@@ -96,14 +118,33 @@ class Neuron:
                     self.fire[clk+2] = 1
                     self.Vmem[clk+1] = Vrst
                     self.refractory_cycles_left = self.refractory
+
+                    # Get the new capacitance value to use
+                    cap_bits = np.random.randint(8)
+
+                    # Reset capacitance to default value
+                    self.cap = cap
+
+                    # Add the other capacitances if the corresponding bits are 1
+                    if (cap_bits & self.c1_mask) == self.c1_mask:
+                        self.cap += c1
+                    if (cap_bits & self.c2_mask) == self.c2_mask:
+                        self.cap += c2
+                    if (cap_bits & self.c3_mask) == self.c3_mask:
+                        self.cap += c3
+
+                    print(self.cap)
+
                     return
 
             # TODO --> Should anything happen here?
             else:
-                pass
+                # The neuron is idle
+                if self.power_stages[clk] == 0:
+                    self.power_stages[clk] = 'I'
 
         # TODO --> Implement leakage current calculation here?
-        # Copy the Vmem for this clock cycle to the vmem for the next cycle       
+        # Copy the Vmem for this clock cycle to the vmem for the next cycle
         self.Vmem[clk+1] = self.Vmem[clk]
 
         return
@@ -250,113 +291,6 @@ class Memristor:
 
 
 
-class StochasticNeuron:
-    def __init__(self, name="N0", vmem=Vrst, vth=0, rf=0, cap=cap):
-        
-        self.name = name
-        self.cap = cap
-        self.Vth = Vrst - vth * Vdiff
-
-        # Set refractory to 0 when not in ref period,
-        # If you are in refractory period, then this
-        # variable holds the number of cycles that
-        # remain in the ref period
-        self.refractory = rf
-        self.refractory_cycles_left = 0
-
-        # Holds a list of synapses that are connected at the input of the neuron
-        self.in_syn_list = []
-
-        # Create lists to store vmem values and neuron activity
-        # self.Vmem = [vmem]*cycles
-        self.Vmem = np.ones(cycles) * vmem
-        # self.fire = [0]*cycles
-        self.fire = np.zeros(cycles)
-
-
-        self.cap_mask = 0
-        self.c1_mask = 1 # Binary 0b0001
-        self.c2_mask = 3 # Binary 0b0010
-        self.c3_mask = 5 # Binary 0b0100
-
-
-    def accum(self, clk):
-
-        # TODO --> This function heavily depends on each consecutive call of accum
-        #          being for the next consecutive clock cycle, probably won't work otherwise
-
-        # # if (clk == 5 or clk == 6 or clk == 7) and self.name == 'O0':
-        # if self.name == 'O0':
-        #             print("ACCUM FOR CLK CYCLE {}".format(clk))
-
-        # If the neuron is in the refractory period, the neuron cannot accumulate
-        # Vmem should always be at reset voltage when in refractory period
-        # Does not account for leakage current
-        #      Does leakage current matter when Vmem is at Vrst level?
-        if self.refractory_cycles_left > 0:
-            self.refractory_cycles_left -= 1
-            return
-
-        # Loop through the connected synapses to accumulate charge
-        for synapse in self.in_syn_list:
-
-            # Check to see if the neuron can accumulate charge
-            if synapse.activity[clk] != 0:
-
-                # Essentially delta_t*current/C = delta_v
-                delta_Vmem = tper * synapse.activity[clk] / self.cap
-                self.Vmem[clk] -= delta_Vmem
-
-                # # if (clk == 5 or clk == 6 or clk == 7) and self.name == 'O0':
-                # if self.name == 'O0':
-                #     print("CHECKING VMEM ACCUMULATION --> CLK: {}".format(clk))
-                #     print("    {} -> {}".format(synapse.pre.name, synapse.post.name))
-                #     print("    synapse G:  {}".format(synapse.G[clk]))
-                #     print("    syn activ:  {}".format(synapse.activity[clk]))
-                #     print("    delta_Vmem: {}".format(delta_Vmem))
-                #     print("    Vmem:       {}".format(self.Vmem[clk]))
-
-                # Boundary condition when Vmem hits a rail
-                if self.Vmem[clk] < VSS:
-                    self.Vmem[clk] = VSS
-                if self.Vmem[clk] > VDD:
-                    self.Vmem[clk] = VDD
-
-                # Check to see if the neuron should fire
-                # If so, reset Vmem and enter refractory period, no need to accumulate further
-                # TODO --> Is returning like this an optimization? (AKA should I keep it)
-                if self.Vmem[clk] < self.Vth:
-                    self.fire[clk+2] = 1
-                    self.Vmem[clk+1] = Vrst
-                    self.refractory_cycles_left = self.refractory
-
-                    # Get the new capacitance value to use
-                    cap_bits = np.random.randint(8)
-
-                    # Reset capacitance to default value
-                    self.cap = cap
-
-                    # Add the other capacitances if the corresponding bits are 1
-                    if (cap_bits & self.c1_mask) == self.c1_mask:
-                        self.cap += c1
-                    if (cap_bits & self.c2_mask) == self.c2_mask:
-                        self.cap += c2
-                    if (cap_bits & self.c3_mask) == self.c3_mask:
-                        self.cap += c3
-
-                    print(self.cap)
-
-                    return
-
-            # TODO --> Should anything happen here?
-            else:
-                pass
-
-        # TODO --> Implement leakage current calculation here?
-        # Copy the Vmem for this clock cycle to the vmem for the next cycle       
-        self.Vmem[clk+1] = self.Vmem[clk]
-
-        return
 
 
 ################################################################### FOR DEBUG ONLY (I think)

@@ -1,4 +1,5 @@
 import sys
+import collections
 from snn_components import *
 
 import matplotlib.pyplot as plt
@@ -68,7 +69,9 @@ for line in lines:
         fire = 0
         threshold = float(line[2])
         refractory = int(line[3])
-        neuron_dict[name] = StochasticNeuron(name, Vmem, threshold, refractory)
+        # neuron_dict[name] = StochasticNeuron(name, Vmem, threshold, refractory)
+        # neuron_dict[name] = Neuron(name, Vmem, threshold, refractory)
+        neuron_dict[name] = Neuron(name, Vmem, threshold, refractory, stochastic=True)
     
     # Read in a synapse and create it
     elif line[0] == 'S':
@@ -308,6 +311,57 @@ np.set_printoptions(precision=2)
 #         print(synapse.delay)
 #         print("    synapse activity:  {}".format(synapse.activity))
 
+
+print()
+print(neuron_dict['I3'].power_stages)
+print(neuron_dict['I3'].fire)
+input_idle = 0
+input_accum = 0
+input_fire = 0
+idle = 0
+accum = 0
+fire = 0
+for index in neuron_dict:
+    neuron = neuron_dict[index]
+    stages = collections.Counter(neuron.power_stages)
+    if neuron.name[0] == 'I':
+        input_idle += stages['I']
+        input_accum += stages['A']
+        input_fire += stages['F']
+        print(input_idle, input_accum, input_fire)
+    else:
+        idle += stages['I']
+        accum += stages['A']
+        fire += stages['F']
+        print(idle, accum, fire)
+
+print("SIM_CYCLES", SIM_CYCLES)
+print()
+print()
+print("Neuron power-consumption stages:")
+print("Input Neurons Only:")
+print("  Idle:", input_idle)
+print("  Accum:", input_accum)
+print("  Fire:", input_fire)
+print()
+print("Internal Neurons Only:")
+print("  Idle:", idle)
+print("  Accum:", accum)
+print("  Fire:", fire)
+print()
+print("Total:")
+print("  Idle:", input_idle + idle)
+print("  Accum:", input_accum + accum)
+print("  Fire:", input_fire + fire)
+
+print()
+print()
+
+
 print('--------------------')
 print(int(neuron_dict['O0'].fire[14]))
+
+
+
+
 

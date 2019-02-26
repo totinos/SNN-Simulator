@@ -1,6 +1,31 @@
 import sys
 import numpy as np
 
+
+# Assumes that the shape is 2-dimensional and that there are more than one element in each dim
+def add_noise(shape, num_noise_bits):
+    new_shape = shape.copy()
+    rows = len(new_shape)
+    cols = len(new_shape[0])
+    bits_changed = np.zeros((rows, cols), dtype='int32')
+    for bit in range(num_noise_bits):
+
+        # Choose a random bit that has not yet been flipped
+        while True:
+            index = np.random.randint(rows*cols)
+            if bits_changed[index//rows][index%rows] == 0:
+                bits_changed[index//rows][index%rows] = 1
+                break
+
+        # Flip the binary pixel to add "noise"
+        if new_shape[index//rows][index%rows] == 1:
+            new_shape[index//rows][index%rows] = 0
+        else:
+            new_shape[index//rows][index%rows] = 1
+
+    return new_shape
+
+
 if __name__ == '__main__':
 
     #############################################
@@ -8,10 +33,10 @@ if __name__ == '__main__':
     #  Check the command line arguments         #
     #                                           #
     #############################################
-    if len(sys.argv) == 4:
+    if len(sys.argv) == 3:
         infile = str(sys.argv[1])
-        outfile = str(sys.argv[2])
-        cycle_gap = int(sys.argv[3])
+        #outfile = str(sys.argv[2])
+        cycle_gap = int(sys.argv[2])
     else:
         print('Usage: python input_data_gen.py <input file> <cycle_gap>')
         exit(1)
@@ -48,7 +73,7 @@ if __name__ == '__main__':
         if line == lines[0]:
             num_images = int(lines[0])
             print('num_images:', num_images)
-            shapes = np.zeros((num_images, rows, cols))
+            shapes = [np.zeros((rows, cols), dtype='int32')]*num_images
 
         # The line contains label information
         elif line[0] == '#':
@@ -80,6 +105,28 @@ if __name__ == '__main__':
 
     # TODO --> this...
 
+
+    #############################################
+    #                                           #
+    #  Add some shapes with noisy bits          #
+    #                                           #
+    #############################################
+
+
+    num_noise_bits = 1
+    starting_len = len(shapes)
+
+    for i in range(95):
+        shape_index = np.random.randint(starting_len)
+        new_shape = add_noise(shapes[shape_index], num_noise_bits)
+        labels.append(labels[shape_index])
+        print(new_shape.shape)
+        shapes.append(new_shape)
+        print(shapes)
+        
+
+
+
     #############################################
     #                                           #
     #  Reverse the order of input spikes to     #
@@ -87,16 +134,47 @@ if __name__ == '__main__':
     #  Insert the desired cycle gap as well     #
     #                                           #
     #############################################
-    fires = np.zeros((num_images, rows, cols+cycle_gap), dtype='int')
+    #fires = np.zeros((num_images, rows, cols+cycle_gap), dtype='int')
     # print(fires.shape)
     shapes = np.flip(shapes, 2)
-    fires[:, :, :shapes.shape[2]] = shapes
+    #fires[:, :, :shapes.shape[2]] = shapes
+
+    print(shapes)
 
     #############################################
     #                                           #
-    #  Write the reformatted data to a file     #
+    #  Write the shapes to output files         #
     #                                           #
     #############################################
+
+    label_outfile = "shape_labels.txt"
+    with open(label_outfile, "w") as labels_of:
+
+        # Put each of the shapes in a separate output file
+        for shape_index in range(len(shapes)):
+
+            # Format the name of each output shape file
+            fout = "shapes/shape_{:03d}.txt".format(shape_index)
+            with open(fout, "w") as of:
+
+                # Write the shape (with columns of zeros inserted) to a file
+                for i in range(rows):
+                    for j in range(cols):
+                        if j == 0:
+                            of.write("{} 0".format(shapes[shape_index][i][j]))
+                        else:
+                            of.write(" {} 0".format(shapes[shape_index][i][j]))
+
+                    # Print some zeros after the shape so the simulator doesn't get mad
+                    for j in range(cycle_gap):
+                        of.write(" 0")
+                    if i != (rows-1):
+                        of.write("\n")
+
+            labels_of.write("{}\n".format(labels[shape_index]))
+        # print(fout)
+    exit()
+
     with open(outfile, 'w') as of:
         
         # Output all of the first rows first

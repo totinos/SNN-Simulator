@@ -53,6 +53,105 @@ def add_noise(shape, num_noise_bits):
     return new_shape
 
 
+# Wrapper function for the add_noise function (operates on a set of shapes)
+def noisify_set(shape_set, num_noise_bits):
+    noisy_shape_set = []
+    for shape in shape_set:
+        noisy_shape = add_noise(shape, num_noise_bits)
+        noisy_shape_set.append(noisy_shape)
+    return noisy_shape_set
+
+
+# Assumes base_shapes and base_labels will have the same length
+def generate_random_shape_set(base_shapes, base_labels, num_shapes):
+    base_len = len(base_shapes)
+    shape_set = []*num_shapes
+    label_set = []*num_shapes
+    for i in range(num_shapes):
+        shape_index = np.random.randint(base_len)
+        new_shape = np.copy(base_shapes[shape_index])
+        label_set.append(base_labels[shape_index])
+        shape_set.append(new_shape)
+    return shape_set, label_set
+
+
+def generate_single_shape_set(shape, label, num_shapes):
+    shape_set = []*num_shapes
+    label_set = []*num_shapes
+    for i in range(num_shapes):
+        new_shape = np.copy(shape)
+        label_set.append(label)
+        shape_set.append(new_shape)
+    return shape_set, label_set
+
+# TODO --> UNTESTED
+def flip_shape_set_vertically(shape_set):
+    flipped_set = []
+    for shape in shape_set:
+        flipped_shape = np.flip(shape, 1)
+        flipped_set.append(flipped_shape)
+    return flipped_set
+
+
+
+# Assumes that the shapes being read were printed without padded zeros
+# Assumes that the dim of the shapes is 5x5
+def read_shapes(directory):
+
+    label_set = []
+    shape_set = []
+
+    fname = "{}/shape_labels.txt".format(directory)
+    with open(fname, "r") as f:
+        lines = f.readlines()
+    for line in lines:
+        line = line.replace('\n', '')
+        label_set.append(line)
+
+    num_shapes = len(label_set)
+    for shape_index in range(num_shapes):
+        fname = "{}/shape_{:03d}.txt".format(directory, shape_index)
+        with open(fname, "r") as f:
+            lines = f.readlines()
+        shape = np.zeros((rows, cols), dtype="int32")
+        for i in range(len(lines)):
+            line = lines[i].split(" ")
+            for j in range(len(line)):
+                shape[i][j] = line[j]
+        shape_set.append(shape)
+
+    return shape_set, label_set
+
+
+def write_shapes(directory="shapes", shape_set=[], label_set=[], include_zeros=False, cycle_gap=10):
+
+    fname = "{}/shape_labels.txt".format(directory)
+    with open(fname, "w") as f:
+        for label in label_set:
+            f.write("{}\n".format(label))
+
+    for shape_index in range(len(shape_set)):
+        fname = "{}/shape_{:03d}.txt".format(directory, shape_index)
+        with open(fname, "w") as f:
+
+            # Write the shapes to their respective files
+            for i in range(rows):
+                for j in range(cols):
+                    if j != 0:
+                        f.write(" ")
+                    f.write("{}".format(shape_set[shape_index][i][j]))
+                    if include_zeros == True:
+                        f.write(" 0")
+
+                # Print some zeros to appease the simulator
+                if include_zeros == True:
+                    for j in range(cycle_gap):
+                        f.write(" 0")
+                if i != (rows-1):
+                    f.write("\n")
+    return
+
+
 if __name__ == '__main__':
 
     #############################################
@@ -147,87 +246,42 @@ if __name__ == '__main__':
 
     # TODO --> Make the noise additions more modular/user friendly
 
-    num_noise_bits = 3
-    # print("length:", len(shapes))
-    starting_len = len(shapes)
-    # print(shapes)
+    # num_noise_bits = 3
+    # # print("length:", len(shapes))
+    # starting_len = len(shapes)
+    # # print(shapes)
+    # # print_shapes(shapes)
+
+    # for i in range(97):
+    #     shape_index = np.random.randint(starting_len)
+    #     # print("index of shape:", shape_index)
+    #     new_shape = add_noise(shapes[shape_index], num_noise_bits)
+    #     labels.append(labels[shape_index])
+    #     # print(new_shape)
+    #     shapes.append(new_shape)
+    #     # print_shapes(shapes)
     # print_shapes(shapes)
-
-    for i in range(97):
-        shape_index = np.random.randint(starting_len)
-        # print("index of shape:", shape_index)
-        new_shape = add_noise(shapes[shape_index], num_noise_bits)
-        labels.append(labels[shape_index])
-        # print(new_shape)
-        shapes.append(new_shape)
-        # print_shapes(shapes)
-    print_shapes(shapes)
         
 
+    # TODO --> Fix this assumption:
+    # ASSUMES THE FIRST SHAPE WILL BE A TRIANGLE
+    # shape_set, label_set = generate_single_shape_set(shapes[2], 'C', 100)
+    # write_shapes("crosses", shape_set, label_set)
+    new_shapes, new_labels = read_shapes("crosses")
+    noisy_shapes = noisify_set(new_shapes, 6)
+    print_shapes(noisy_shapes)
+    write_shapes("noisy_shapes", noisy_shapes, new_labels, include_zeros=True)
+
+    # shape_set, label_set = generate_random_shape_set(shapes, labels, 100)
+    # write_shapes("shapes", shape_set, label_set)
+    # new_shapes, new_labels = read_shapes("shapes")
+
+    # noisy_shapes = noisify_set(new_shapes, 2)
+    # write_shapes("noisy_shapes", noisy_shapes, new_labels, include_zeros=True)
+    # ns, nl = read_shapes("noisy_shapes")
+    # print_shapes(ns)
+    # print(nl)
 
 
-    #############################################
-    #                                           #
-    #  Reverse the order of input spikes to     #
-    #  reflect visual representation in time -  #
-    #  Insert the desired cycle gap as well     #
-    #                                           #
-    #############################################
-    #fires = np.zeros((num_images, rows, cols+cycle_gap), dtype='int')
-    # print(fires.shape)
-    shapes = np.flip(shapes, 2)
-    #fires[:, :, :shapes.shape[2]] = shapes
 
-    # print(shapes)
-
-    #############################################
-    #                                           #
-    #  Write the shapes to output files         #
-    #                                           #
-    #############################################
-
-    label_outfile = "shape_labels.txt"
-    with open(label_outfile, "w") as labels_of:
-
-        # Put each of the shapes in a separate output file
-        for shape_index in range(len(shapes)):
-
-            # Format the name of each output shape file
-            fout = "shapes/shape_{:03d}.txt".format(shape_index)
-            with open(fout, "w") as of:
-
-                # Write the shape (with columns of zeros inserted) to a file
-                for i in range(rows):
-                    for j in range(cols):
-                        if j == 0:
-                            of.write("{} 0".format(shapes[shape_index][i][j]))
-                        else:
-                            of.write(" {} 0".format(shapes[shape_index][i][j]))
-
-                    # Print some zeros after the shape so the simulator doesn't get mad
-                    for j in range(cycle_gap):
-                        of.write(" 0")
-                    if i != (rows-1):
-                        of.write("\n")
-
-            labels_of.write("{}\n".format(labels[shape_index]))
-        # print(fout)
     exit()
-
-    with open(outfile, 'w') as of:
-        
-        # Output all of the first rows first
-        for j in range(rows):
-            for i in range(len(fires)):
-                for k in range(len(fires[i][j])):
-                    of.write('{} '.format(fires[i][j][k]))
-            #         print(fires[i][j][k], end='')
-            #     print(' ', end='')
-            # print('')
-            of.write('\n')
-
-
-    # print(shapes[3])
-    # print(fires)
-    # print()
-    # print(labels)
