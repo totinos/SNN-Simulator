@@ -5,10 +5,10 @@ from snn_components import *
 import matplotlib.pyplot as plt
 
 network_file = sys.argv[1]
-print(network_file)
+#print(network_file)
 
 input_file = sys.argv[2]
-print(input_file)
+#print(input_file)
 
 # if network == 1:
 #     textfile = open("../smallnetdesc.txt", "r")
@@ -37,10 +37,10 @@ for line in lines:
     input_neuron_list.append(input_neuron)
     input_synapse_list.append(input_synapse)
 
-    print(np.array(line))
+    #print(np.array(line))
 
 SIM_CYCLES = len(line)
-print(SIM_CYCLES)
+#print(SIM_CYCLES)
 
 
 
@@ -53,6 +53,8 @@ with open(network_file, 'r') as f:
 
 neuron_dict = {}
 synapse_list = []
+rng = Std_RNG()
+#rng.step()
 
 # UNTIL I KNOW HOW THIS ACTUALLY WORKS
 count = 0
@@ -71,7 +73,7 @@ for line in lines:
         refractory = int(line[3])
         # neuron_dict[name] = StochasticNeuron(name, Vmem, threshold, refractory)
         # neuron_dict[name] = Neuron(name, Vmem, threshold, refractory)
-        neuron_dict[name] = Neuron(name, Vmem, threshold, refractory, stochastic=True)
+        neuron_dict[name] = Neuron(name, Vmem, threshold, refractory, stochastic=True, rng=rng)
     
     # Read in a synapse and create it
     elif line[0] == 'S':
@@ -95,7 +97,7 @@ for line in lines:
     #####################################################################
     # Determine if an input needs to be connected to a neuron
     elif line[0] == 'INPUT':
-        print('Input is connected to', line[2])
+        #print('Input is connected to', line[2])
         neuron = neuron_dict[line[2]]
         index = count
         count += 1 # TODO --> FIX THIS (Or rather just don't use it)
@@ -108,7 +110,7 @@ for line in lines:
 
     # A hacky way to stop reading network components  <-- TODO --> FIX THIS
     elif line[0] == '#':
-        print('Finished reading network')
+        #print('Finished reading network')
         break
 
     # Default case to catch all other lines
@@ -125,6 +127,12 @@ for neuron in neuron_dict:
 print('--------------------')
 
 
+# Create a chaotic RNG instance
+#rng = Chaos_RNG('lookup_geo_5_4.tbl', 0.1, 0.775)
+#rng = Std_RNG()
+#rng.step()
+#print(rng.get_num_out())
+
 # Use the -1 for now because we are setting clk+1 a few places in the simulation
 # Synapses are processed before neurons because synapse activity is instantaneous
 # whereas neuron outputs are buffered by a DFF
@@ -133,6 +141,7 @@ for clk in range(SIM_CYCLES-2):
         synapse.shift_spikes(clk)
     for neuron in neuron_dict:
         neuron_dict[neuron].accum(clk)
+    rng.step()
     
 
 np.set_printoptions(precision=2)
@@ -312,56 +321,55 @@ np.set_printoptions(precision=2)
 #         print("    synapse activity:  {}".format(synapse.activity))
 
 
-print()
-print(neuron_dict['I3'].power_stages)
-print(neuron_dict['I3'].fire)
-input_idle = 0
-input_accum = 0
-input_fire = 0
-idle = 0
-accum = 0
-fire = 0
-for index in neuron_dict:
-    neuron = neuron_dict[index]
-    stages = collections.Counter(neuron.power_stages)
-    if neuron.name[0] == 'I':
-        input_idle += stages['I']
-        input_accum += stages['A']
-        input_fire += stages['F']
-        print(input_idle, input_accum, input_fire)
-    else:
-        idle += stages['I']
-        accum += stages['A']
-        fire += stages['F']
-        print(idle, accum, fire)
+###########################################################
+# This section is for printing neuron phase information
+###########################################################
 
-print("SIM_CYCLES", SIM_CYCLES)
-print()
-print()
-print("Neuron power-consumption stages:")
-print("Input Neurons Only:")
-print("  Idle:", input_idle)
-print("  Accum:", input_accum)
-print("  Fire:", input_fire)
-print()
-print("Internal Neurons Only:")
-print("  Idle:", idle)
-print("  Accum:", accum)
-print("  Fire:", fire)
-print()
-print("Total:")
-print("  Idle:", input_idle + idle)
-print("  Accum:", input_accum + accum)
-print("  Fire:", input_fire + fire)
+# print()
+# print(neuron_dict['I3'].power_stages)
+# print(neuron_dict['I3'].fire)
+# input_idle = 0
+# input_accum = 0
+# input_fire = 0
+# idle = 0
+# accum = 0
+# fire = 0
+# for index in neuron_dict:
+#     neuron = neuron_dict[index]
+#     stages = collections.Counter(neuron.power_stages)
+#     if neuron.name[0] == 'I':
+#         input_idle += stages['I']
+#         input_accum += stages['A']
+#         input_fire += stages['F']
+#         print(input_idle, input_accum, input_fire)
+#     else:
+#         idle += stages['I']
+#         accum += stages['A']
+#         fire += stages['F']
+#         print(idle, accum, fire)
 
-print()
-print()
+# print("SIM_CYCLES", SIM_CYCLES)
+# print()
+# print()
+# print("Neuron power-consumption stages:")
+# print("Input Neurons Only:")
+# print("  Idle:", input_idle)
+# print("  Accum:", input_accum)
+# print("  Fire:", input_fire)
+# print()
+# print("Internal Neurons Only:")
+# print("  Idle:", idle)
+# print("  Accum:", accum)
+# print("  Fire:", fire)
+# print()
+# print("Total:")
+# print("  Idle:", input_idle + idle)
+# print("  Accum:", input_accum + accum)
+# print("  Fire:", input_fire + fire)
+
+# print()
+# print()
 
 
-print('--------------------')
+# print('--------------------')
 print(int(neuron_dict['O0'].fire[14]))
-
-
-
-
-

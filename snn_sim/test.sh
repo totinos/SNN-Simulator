@@ -9,6 +9,8 @@ dir_name="../shape_recognition/noisy_shapes"
 label_file="$dir_name/shape_labels.txt"
 num_iterations=$epochs
 
+num_shapes=0
+
 
 while [ "$epochs" -ne 0 ]; do
 
@@ -54,6 +56,7 @@ while [ "$epochs" -ne 0 ]; do
 
     # Reset the shape counter and move to the next epoch
     echo ""
+    num_shapes=$count
     count=0
     epochs=`echo "$epochs" - 1 | bc`
 done
@@ -62,3 +65,4 @@ done
 accuracy=`echo "$num_correctly_identified / $num_iterations" | bc -l`
 echo "ACCURACY: $accuracy%"
 
+say "DONE"

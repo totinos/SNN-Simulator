@@ -1,9 +1,11 @@
-
+import math
 
 # Import parameters from params.py (must import before numpy
 # because there is a list with the name np in params.py)
 from params import *
 import numpy as np
+
+# chaos=True
 
 
 ##########################################################
@@ -19,12 +21,66 @@ import numpy as np
 ########################################################## 
 
 
+class Chaos_RNG:
+    def __init__(self, lookup_table, Vseed, Vbias):
+
+        # Get data from lookup table (TAKES TIME)
+        data = np.genfromtxt(lookup_table)
+
+        # Place the contents of the table in a dict
+        self.chaos = {}
+        for i in range(len(data)):
+            key = tuple((data[i][0], data[i][1]))
+            val = data[i][2]
+            self.chaos[key] = val
+
+        # Set up internal variables
+        self.vin = 0
+        self.vout = 0
+        self.vbias = Vbias
+
+        # Initialize the RNG by running through some combinations
+        for i in range(100):
+            if i == 0:
+                self.vin = Vseed
+            key = tuple((self.vin, self.vbias))
+            self.vout = self.chaos[key]
+        
+        # Set up output for easy bit split
+        self.num_out = round((self.vout / 1.2) * 8)
+    
+    def step(self):
+        self.vin = self.vout
+        self.vin = round(self.vin * 400) / 400
+        key = tuple((self.vin, self.vbias))
+        self.vout = self.chaos[key]
+        self.num_out = round((self.vout / 1.2) * 8)
+    
+    def get_vout(self):
+        return self.vout
+
+    def get_num_out(self):
+        return self.num_out
+
+
+class Std_RNG:
+    def __init__(self):
+        self.num_out = 0
+
+    def step(self):
+        self.num_out = np.random.randint(8)
+
+    def get_num_out(self):
+        return self.num_out
+
+
+
 ################## HOW DOES DELAY WORK IN THE FRAMEWORK? --> Does the delay
 # happen before the memristive part of the synapse, or does it happen after?
 # Can there be more than one spike in a synapse at any given time?
 
 class Neuron:
-    def __init__(self, name="N0", vmem=Vrst, vth=0, rf=0, cap=cap, stochastic=False):
+    def __init__(self, name="N0", vmem=Vrst, vth=0, rf=0, cap=cap, stochastic=False, rng=Std_RNG()):
         
         self.name = name
         self.Vth = Vrst - vth * Vdiff
@@ -47,12 +103,16 @@ class Neuron:
         # self.power_stages = np.zeros(cycles, dtype='|S1')
         self.power_stages = [0]*cycles
 
-        if stochastic == True:
+        self.stochastic = stochastic
+
+
+        if self.stochastic == True:
             self.cap = cap + 2e-12
             self.cap_mask = 0
             self.c1_mask = 1 # Binary 0b0001
             self.c2_mask = 3 # Binary 0b0010
             self.c3_mask = 5 # Binary 0b0100
+            self.rng = rng
         else:
             self.cap = cap
 
@@ -64,8 +124,8 @@ class Neuron:
         #          being for the next consecutive clock cycle, probably won't work otherwise
 
         # if (clk == 5 or clk == 6 or clk == 7) and self.name == 'O0':
-        if self.name == 'O0':
-                    print("ACCUM FOR CLK CYCLE {}".format(clk))
+        # if self.name == 'O0':
+        #             print("ACCUM FOR CLK CYCLE {}".format(clk))
 
         # If the neuron is in the refractory period, the neuron cannot accumulate
         # Vmem should always be at reset voltage when in refractory period
@@ -97,13 +157,13 @@ class Neuron:
                 self.Vmem[clk] -= delta_Vmem
 
                 # if (clk == 5 or clk == 6 or clk == 7) and self.name == 'O0':
-                if self.name == 'O0':
-                    print("CHECKING VMEM ACCUMULATION --> CLK: {}".format(clk))
-                    print("    {} -> {}".format(synapse.pre.name, synapse.post.name))
-                    print("    synapse G:  {}".format(synapse.G[clk]))
-                    print("    syn activ:  {}".format(synapse.activity[clk]))
-                    print("    delta_Vmem: {}".format(delta_Vmem))
-                    print("    Vmem:       {}".format(self.Vmem[clk]))
+                # if self.name == 'O0':
+                #     print("CHECKING VMEM ACCUMULATION --> CLK: {}".format(clk))
+                #     print("    {} -> {}".format(synapse.pre.name, synapse.post.name))
+                #     print("    synapse G:  {}".format(synapse.G[clk]))
+                #     print("    syn activ:  {}".format(synapse.activity[clk]))
+                #     print("    delta_Vmem: {}".format(delta_Vmem))
+                #     print("    Vmem:       {}".format(self.Vmem[clk]))
 
                 # Boundary condition when Vmem hits a rail
                 if self.Vmem[clk] < VSS:
@@ -119,21 +179,24 @@ class Neuron:
                     self.Vmem[clk+1] = Vrst
                     self.refractory_cycles_left = self.refractory
 
-                    # Get the new capacitance value to use
-                    cap_bits = np.random.randint(8)
+                    if self.stochastic == True:
+                        # Get the new capacitance value to use
+                        # cap_bits = np.random.randint(8)
+                        cap_bits = self.rng.get_num_out()
+                        #print(self.rng.get_num_out())
 
-                    # Reset capacitance to default value
-                    self.cap = cap
+                        # Reset capacitance to default value
+                        self.cap = cap
 
-                    # Add the other capacitances if the corresponding bits are 1
-                    if (cap_bits & self.c1_mask) == self.c1_mask:
-                        self.cap += c1
-                    if (cap_bits & self.c2_mask) == self.c2_mask:
-                        self.cap += c2
-                    if (cap_bits & self.c3_mask) == self.c3_mask:
-                        self.cap += c3
+                        # Add the other capacitances if the corresponding bits are 1
+                        if (cap_bits & self.c1_mask) == self.c1_mask:
+                            self.cap += c1
+                        if (cap_bits & self.c2_mask) == self.c2_mask:
+                            self.cap += c2
+                        if (cap_bits & self.c3_mask) == self.c3_mask:
+                            self.cap += c3
 
-                    print(self.cap)
+                        # print(self.cap)
 
                     return
 
@@ -174,6 +237,8 @@ class Synapse:
         self.Gmax = 1/LRS - 1/HRS
         self.G = np.ones(cycles) * (1/Mp - 1/Mn)
 
+        self.power_stages = [0]*cycles
+
         #######################
         # FROM THE OLD SYNAPSE
         #######################
@@ -209,6 +274,12 @@ class Synapse:
             # self.activity[clk+1] = self.pre.fire
             self.activity[clk] = self.pre.fire[clk] * current
             # pass
+
+        # Determine whether the synapse is idle or active
+        if self.activity[clk] != 0:
+            self.power_stages[clk] = 'I'
+        else:
+            self.power_stages[clk] = 'A'
 
 
 ##########################################################
@@ -287,6 +358,10 @@ class Memristor:
     
     def Minc(self):
         return (self.HRS-self.LRS)*(delT/self.tswN)*(Vt/self.VtN)
+
+
+
+
 
 
 

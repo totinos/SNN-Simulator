@@ -69,3 +69,6 @@ M_inc = (HRS-LRS)*(delT/tswn)*(Vt/Vthn)
 # print(M_inc)
 # print(cycles)
 # print(STDP_cycle)
+
+import numpy as np
+

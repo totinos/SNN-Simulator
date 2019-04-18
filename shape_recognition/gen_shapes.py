@@ -84,6 +84,42 @@ def generate_single_shape_set(shape, label, num_shapes):
         shape_set.append(new_shape)
     return shape_set, label_set
 
+def merge_shape_set(shapes_1, labels_1, shapes_2, labels_2):
+    len1 = len(shapes_1)
+    len2 = len(shapes_2)
+
+    if len1 == 0 and len2 != 0:
+        return shapes_2, labels_2
+    elif len2 == 0:
+        return shapes_1, labels_1
+
+    total_len = len1 + len2
+    idx1, idx2 = 0, 0
+    shape_set = []
+    label_set = []
+    for i in range(total_len):
+
+        # Determine which set to get shape from
+        if idx1 >= len1:
+            shape = 1
+        elif idx2 >= len2:
+            shape = 0
+        else:
+            shape = np.random.randint(2)
+
+        # Append shape from appropriate set
+        if shape == 0:
+            shape_set.append(shapes_1[idx1])
+            label_set.append(labels_1[idx1])
+            idx1 += 1
+        else:
+            shape_set.append(shapes_2[idx2])
+            label_set.append(labels_2[idx2])
+            idx2 += 1
+    return shape_set, label_set
+
+    
+
 # TODO --> UNTESTED
 def flip_shape_set_vertically(shape_set):
     flipped_set = []
@@ -262,6 +298,21 @@ if __name__ == '__main__':
     #     # print_shapes(shapes)
     # print_shapes(shapes)
         
+
+    # ss1, ls1 = generate_single_shape_set(shapes[0], 'T', 100)
+    # ss2, ls2 = generate_single_shape_set(shapes[1], 'S', 100)
+    # ss3, ls3 = generate_single_shape_set(shapes[2], 'C', 100)
+    # ss4, ls4 = merge_shape_set(ss1, ls1, ss2, ls2)
+    # ss5, ls5 = merge_shape_set(ss3, ls3, ss4, ls4)
+    # print_shapes(ss5)
+    # write_shapes("mixed", ss5, ls5)
+
+    new_shapes, new_labels = read_shapes("mixed")
+    noisy_shapes = noisify_set(new_shapes, 0)
+    print_shapes(noisy_shapes)
+    write_shapes("noisy_shapes", noisy_shapes, new_labels, include_zeros=True)
+    exit()
+
 
     # TODO --> Fix this assumption:
     # ASSUMES THE FIRST SHAPE WILL BE A TRIANGLE
