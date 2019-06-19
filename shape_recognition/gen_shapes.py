@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+from optparse import OptionParser
 
 
 # Assumes that the shape is 2D and that there are more than one element in each dim
@@ -195,20 +196,30 @@ if __name__ == '__main__':
     #  Check the command line arguments         #
     #                                           #
     #############################################
-    if len(sys.argv) == 3:
-        infile = str(sys.argv[1])
-        #outfile = str(sys.argv[2])
-        cycle_gap = int(sys.argv[2])
-    else:
-        print('Usage: python input_data_gen.py <input file> <cycle_gap>')
-        exit(1)
+    #if len(sys.argv) == 3:
+    #    infile = str(sys.argv[1])
+    #    #outfile = str(sys.argv[2])
+    #    cycle_gap = int(sys.argv[2])
+    #else:
+    #    print('Usage: python input_data_gen.py <input file> <cycle_gap>')
+    #    exit(1)
+
+    
+    parser = OptionParser()
+    parser.add_option("--file", dest="infile", help="Input shape file", metavar="INPUT_FILE")
+    parser.add_option("--shape", dest="gen_shape", help="Shape to generate ('T', 'S', 'C', or 'ALL')", metavar="SHAPE");
+    parser.add_option("--num_noise_bits", dest="num_noise_bits", help="Number of noise bits to insert", metavar="NUM_NOISE_BITS");
+    (options, args) = parser.parse_args()
+    if not options.infile:
+        parser.error("Filename not given")
+
 
     #############################################
     #                                           #
     #  Read the file into a list of lines       #
     #                                           #
     #############################################
-    with open(infile, 'r') as f:
+    with open(options.infile, 'r') as f:
         lines = f.readlines()
 
     # Number of rows and columns of each image
@@ -307,21 +318,22 @@ if __name__ == '__main__':
     # print_shapes(ss5)
     # write_shapes("mixed", ss5, ls5)
 
-    new_shapes, new_labels = read_shapes("mixed")
-    noisy_shapes = noisify_set(new_shapes, 0)
-    print_shapes(noisy_shapes)
-    write_shapes("noisy_shapes", noisy_shapes, new_labels, include_zeros=True)
-    exit()
+    # new_shapes, new_labels = read_shapes("mixed")
+    # noisy_shapes = noisify_set(new_shapes, 0)
+    # print_shapes(noisy_shapes)
+    # write_shapes("noisy_shapes", noisy_shapes, new_labels, include_zeros=True)
+    # exit()
 
 
     # TODO --> Fix this assumption:
     # ASSUMES THE FIRST SHAPE WILL BE A TRIANGLE
     # shape_set, label_set = generate_single_shape_set(shapes[2], 'C', 100)
     # write_shapes("crosses", shape_set, label_set)
-    new_shapes, new_labels = read_shapes("crosses")
-    noisy_shapes = noisify_set(new_shapes, 6)
-    print_shapes(noisy_shapes)
-    write_shapes("noisy_shapes", noisy_shapes, new_labels, include_zeros=True)
+    
+    # new_shapes, new_labels = read_shapes("crosses")
+    # noisy_shapes = noisify_set(new_shapes, 6)
+    # print_shapes(noisy_shapes)
+    # write_shapes("noisy_shapes", noisy_shapes, new_labels, include_zeros=True)
 
     # shape_set, label_set = generate_random_shape_set(shapes, labels, 100)
     # write_shapes("shapes", shape_set, label_set)
@@ -333,6 +345,18 @@ if __name__ == '__main__':
     # print_shapes(ns)
     # print(nl)
 
+    if options.gen_shape == 'T':
+        gen_shape = "triangles"
+    elif options.gen_shape == 'S':
+        gen_shape = "squares"
+    elif options.gen_shape == 'C':
+        gen_shape = "crosses"
+    elif options.gen_shape == "ALL":
+        gen_shape = "mixed"
 
+    new_shapes, new_labels = read_shapes(gen_shape)
+    noisy_shapes = noisify_set(new_shapes, int(options.num_noise_bits))
+    print_shapes(noisy_shapes)
+    write_shapes("noisy_shapes", noisy_shapes, new_labels, include_zeros=True)
 
     exit()

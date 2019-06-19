@@ -43,18 +43,42 @@ class Chaos_RNG:
         for i in range(100):
             if i == 0:
                 self.vin = Vseed
-            key = tuple((self.vin, self.vbias))
+            key = tuple((self.vbias, self.vin))
             self.vout = self.chaos[key]
         
         # Set up output for easy bit split
-        self.num_out = round((self.vout / 1.2) * 8)
+        self.num_out = int(round((self.vout / 1.2) * 8))
     
     def step(self):
+        
         self.vin = self.vout
-        self.vin = round(self.vin * 400) / 400
-        key = tuple((self.vin, self.vbias))
-        self.vout = self.chaos[key]
-        self.num_out = round((self.vout / 1.2) * 8)
+        
+        # Round LUT output values to nearest LUT input value
+        # self.vin = round(self.vin * 400) / 400
+        # key = tuple((self.vin, self.vbias))
+        # self.vout = self.chaos[key]
+
+        # Use linear interpolation (preserving all decimals)
+        # in1 = np.ceil(self.vin * 400) / 400
+        # in2 = np.floor(self.vin * 400) / 400
+        in1 = np.ceil(self.vin * 1000) / 1000
+        in2 = np.floor(self.vin * 1000) / 1000
+        key1 = tuple((self.vbias, in1))
+        key2 = tuple((self.vbias, in2))
+        out1 = self.chaos[key1]
+        out2 = self.chaos[key2]
+        self.vout = ((out1 - out2) * (self.vin - in2) / (in1 - in2)) + out2
+        # print("Vin:", self.vin)
+        # print(in1)
+        # print(in2)
+        # print("Prop:",(self.vin-in2)/(in1-in2))
+        # print("Times:",out1-out2)
+        # print("Vout:", self.vout)
+        # print(out1)
+        # print(out2)
+        # print("----------")
+
+        self.num_out = int(round((self.vout / 1.2) * 8))
     
     def get_vout(self):
         return self.vout
@@ -183,7 +207,6 @@ class Neuron:
                         # Get the new capacitance value to use
                         # cap_bits = np.random.randint(8)
                         cap_bits = self.rng.get_num_out()
-                        #print(self.rng.get_num_out())
 
                         # Reset capacitance to default value
                         self.cap = cap
