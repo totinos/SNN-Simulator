@@ -1,0 +1,59 @@
+// MODIFIED TO USE HRS=300k and LRS=30k
+
+// These are the input neurons
+//   threshold (normalized)   refractory
+N I0 0 1
+N I1 0 1
+N I2 0 1
+N I3 0 1
+N I4 0 1
+
+// Rethink these thresholds
+// Hidden neurons
+N H0 0.100000 1
+N H1 0.133333 1
+N H2 0.033333 1
+
+// Output neurons
+N O0 0.166667 1
+
+// Synapses from input neurons to hidden neurons
+//      Geff delay wp wn
+// 1  - 97.13996 232.8604
+// 3  - 46.4538 283.5462
+// -1 - 232.8604 97.13996
+// -3 - 283.5462 46.4538
+S I0 H0 0.1 0 283.5462 46.4538
+S I0 H1 0.1 1 232.8604 97.13996
+S I0 H2 0.1 2 97.13996 232.8604
+S I1 H0 0.1 0 232.8604 97.13996
+S I1 H1 0.1 1 46.4538 283.5462
+S I1 H2 0.1 2 232.8604 97.13996
+S I2 H0 0.1 0 283.5462 46.4538
+S I2 H1 0.1 1 46.4538 283.5462
+S I2 H2 0.1 2 232.8604 97.13996
+S I3 H0 0.1 0 46.4538 283.5462
+S I3 H1 0.1 1 232.8604 97.13996
+S I3 H2 0.1 2 283.5462 46.4538
+S I4 H0 0.1 0 46.4538 283.5462
+S I4 H1 0.1 1 46.4538 283.5462
+S I4 H2 0.1 2 97.13996 232.8604
+
+// Synapses from hidden neurons to output neurons
+S H0 O0 0.1 0 11.743 13.256
+S H0 O0 0.1 4 11.743 13.256
+S H1 O0 0.1 0 11.743 13.256
+S H1 O0 0.1 2 11.743 13.256
+S H2 O0 0.1 0 11.743 13.256
+
+// Denote the inputs
+INPUT 0 I0
+INPUT 1 I1
+INPUT 2 I2
+INPUT 3 I3
+INPUT 4 I4
+
+// Denote the outputs
+OUTPUT 0 O0
+
+#
