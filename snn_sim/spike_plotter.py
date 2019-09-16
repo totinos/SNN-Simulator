@@ -16,9 +16,9 @@ class SpikePlotter:
         waveforms = []
 
         for arg in args:
-            if not isinstance(arg, list):
-                print("ERROR OCCURRED DURING PLOTTING")
-                return 
+#             if not isinstance(arg, list):
+#                 print("ERROR OCCURRED DURING PLOTTING")
+#                 return 
             data = np.repeat(arg, 2)
             if (len(data) > max_len):
                 max_len = len(data)

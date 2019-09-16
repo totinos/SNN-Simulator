@@ -2,7 +2,7 @@ import sys
 import collections
 from snn_components import *
 
-import ../spike_plotter/spike_plotter.py
+from spike_plotter import *
 
 # THIS FILE RUNS THE SIMULATOR MAYBE???
 
@@ -100,6 +100,34 @@ for line in lines:
     else:
         pass
 
+print(HRS)
+print(LRS)
+exit()
+
+for line in lines:
+    line = line.replace('\n', '')
+    line = line.split(' ')
+
+    if line [1] == 'I':
+        name = line[2]
+        Vmem = Vrst
+        fire = 0
+        threshold = 0
+        refractory = 0
+        neuron_dict[name] = Neuron(name, Vmem, threshold, refractory, stochastic=False, rng=rng)
+    
+    elif line[1] == 'O':
+        name = line[2]
+        Vmem = Vrst
+        fire = 0
+        threshold = 0
+        refractory = 0
+        neuron_dict[name] = Neuron(name, Vmem, threshold, refractory, stochastic=False, rng=rng)
+
+    elif line[1] == 'S':
+        pre = neuron_dict[line[2]]
+        post = neuron_dict[line[3]]
+        
 
 
 for clk in range(SIM_CYCLES-2):
@@ -116,5 +144,5 @@ np.set_printoptions(precision=2)
 output = neuron_dict['O0'].fire[14]
 print(output)
 
-sp = SpikePlotter()
-sp.plot(neuron_dict['O0'].fire)
+#sp = SpikePlotter()
+#sp.plot(neuron_dict['I0'].fire, neuron_dict['I1'].fire, neuron_dict['I2'].fire, neuron_dict['I3'].fire, neuron_dict['I4'].fire, neuron_dict['O0'].fire)
