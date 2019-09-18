@@ -1,10 +1,44 @@
 import sys
 import collections
-from snn_components import *
+#from snn_components import *
 
 from spike_plotter import *
 
 # THIS FILE RUNS THE SIMULATOR MAYBE???
+
+
+
+
+
+
+########## Testing out new structure here ##########
+
+import params
+#from components.synapse import TwinMemristive as TM
+#from components.neuron import LIF
+from components.rng import RNG
+
+user_params = {
+    "HRS": 15e3,
+    "LRS": 9e3
+}
+
+params.setup(user_params)
+print(params.get("LRS"))
+print(params.get("VDD"))
+exit()
+
+
+print(rng.get_output())
+exit()
+
+####################################################
+
+
+
+
+
+
 
 network_file = sys.argv[1]
 input_file = sys.argv[2]
@@ -28,7 +62,7 @@ for line in lines:
     # Create an input neuron and synapse, the post-neuron of the synapse is as yet unknown
     input_neuron = InputNeuron(line, "INP")
     # input_synapse = InputSynapse(Mp_in, Mn_in, 0, input_neuron, None)
-    input_synapse = Synapse(Mp_in, Mn_in, 0, input_neuron, None)
+    input_synapse = Synapse(3, 0, input_neuron, None)
     input_neuron_list.append(input_neuron)
     input_synapse_list.append(input_synapse)
 
@@ -67,9 +101,10 @@ for line in lines:
         post = neuron_dict[line[2]]
         Geff = float(line[3])
         delay = int(line[4])
-        wp = float(line[5])*1e3 # TODO --> Right place to do this conversion???
-        wn = float(line[6])*1e3
-        syn = Synapse(wp, wn, delay, pre, post)
+        weight = int(line[5])
+        # wp = float(line[5])*1e3 # TODO --> Right place to do this conversion???
+        # wn = float(line[6])*1e3
+        syn = Synapse(weight, delay, pre, post)
         synapse_list.append(syn)
 
         # Add connected synapses to each neuron (full model of connectivity)
@@ -100,33 +135,35 @@ for line in lines:
     else:
         pass
 
-print(HRS)
-print(LRS)
-exit()
 
-for line in lines:
-    line = line.replace('\n', '')
-    line = line.split(' ')
 
-    if line [1] == 'I':
-        name = line[2]
-        Vmem = Vrst
-        fire = 0
-        threshold = 0
-        refractory = 0
-        neuron_dict[name] = Neuron(name, Vmem, threshold, refractory, stochastic=False, rng=rng)
-    
-    elif line[1] == 'O':
-        name = line[2]
-        Vmem = Vrst
-        fire = 0
-        threshold = 0
-        refractory = 0
-        neuron_dict[name] = Neuron(name, Vmem, threshold, refractory, stochastic=False, rng=rng)
 
-    elif line[1] == 'S':
-        pre = neuron_dict[line[2]]
-        post = neuron_dict[line[3]]
+
+# for line in lines:
+#     line = line.replace('\n', '')
+#     line = line.split(' ')
+# 
+#     if line [1] == 'I':
+#         name = line[2]
+#         Vmem = Vrst
+#         fire = 0
+#         threshold = line[3]
+#         refractory = 0
+#         neuron_dict[name] = Neuron(name, Vmem, threshold, refractory, stochastic=False, rng=rng)
+#     
+#     elif line[1] == 'O':
+#         name = line[2]
+#         Vmem = Vrst
+#         fire = 0
+#         threshold = float(line[3])
+#         refractory = 0
+#         neuron_dict[name] = Neuron(name, Vmem, threshold, refractory, stochastic=False, rng=rng)
+# 
+#     elif line[1] == 'S':
+#         pre = neuron_dict[line[2]]
+#         post = neuron_dict[line[3]]
+#         delay = int(line[4])
+#         weight = int(line[4])
         
 
 
