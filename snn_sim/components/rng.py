@@ -2,7 +2,7 @@ import numpy as np
 
 class RNG:
     def __init__(self):
-        self.output = HRS
+        self.output = 0
     
     def step(self):
         self.output = np.random.randint(8)

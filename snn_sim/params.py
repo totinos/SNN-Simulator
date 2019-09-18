@@ -7,7 +7,7 @@ user_fn = "user_params.json"
 # Setup step involves copying default params to user      #
 # params file and changing user-defined params            #
 ###########################################################
-def setup(user_params):
+def setup(user_params={}):
     data = {}
 
     # Read default parameters into dict 

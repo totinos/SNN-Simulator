@@ -14,8 +14,8 @@ from spike_plotter import *
 ########## Testing out new structure here ##########
 
 import params
-#from components.synapse import TwinMemristive as TM
-#from components.neuron import LIF
+from components.synapse import TwinMemristive as TM
+from components.neuron import LIF
 from components.rng import RNG
 
 user_params = {
@@ -26,10 +26,6 @@ user_params = {
 params.setup(user_params)
 print(params.get("LRS"))
 print(params.get("VDD"))
-exit()
-
-
-print(rng.get_output())
 exit()
 
 ####################################################

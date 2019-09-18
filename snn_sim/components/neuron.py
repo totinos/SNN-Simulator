@@ -1,5 +1,4 @@
-# TODO --> only import needed parameters
-from params import *
+import params
 
 class LIF:
     def __init__(self):
