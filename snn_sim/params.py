@@ -25,6 +25,10 @@ def setup(user_params={}):
 
     return
     
+
+# TODO --> Make the get function so that it can retrieve
+#          multiple parameters at once for efficiency
+
 ###########################################################
 # Get a parameter value from the json file                #
 ###########################################################
