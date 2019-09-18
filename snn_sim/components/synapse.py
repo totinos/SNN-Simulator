@@ -13,6 +13,7 @@ class TwinMemristive:
         self.Gmax = 1/params.get("LRS") - 1/params.get("HRS")
         
         print("Synapse created!")
+        print("self.Gmax:", self.Gmax)
         # print(LRS)
         # print(HRS)
         # print(cycles)

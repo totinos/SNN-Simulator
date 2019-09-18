@@ -14,18 +14,22 @@ from spike_plotter import *
 ########## Testing out new structure here ##########
 
 import params
+
 from components.synapse import TwinMemristive as TM
 from components.neuron import LIF
 from components.rng import RNG
 
 user_params = {
-    "HRS": 15e3,
-    "LRS": 9e3
+    "Vrst": 0.6
 }
 
 params.setup(user_params)
+
 print(params.get("LRS"))
 print(params.get("VDD"))
+
+n = LIF()
+n.accumulate(1)
 exit()
 
 ####################################################

@@ -1,7 +1,7 @@
 {
 	"VDD": 1.2,
 	"VSS": 0,
-	"cylces": 20,
+	"cycles": 20,
 	"tper": 5e-8,
 	"Vth": 550e-3,
 	"cap": 9e-12,
