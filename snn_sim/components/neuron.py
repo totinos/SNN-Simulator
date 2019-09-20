@@ -13,10 +13,10 @@ class InputNeuron:
         self.fire = fire
 
 
-class LIF:
+class IAF:
 
     def __init__(self, name="", Vmem=params.get("Vrst"), Vth=params.get("Vth"), rf=0, cap=params.get("cap")):
-        """Creates a Leaky Integrate-and-Fire neuron with the given parameters.
+        """Creates an Integrate-and-Fire neuron with the given parameters.
 
         Args:
             name - A string uniquely identifying the neuron.

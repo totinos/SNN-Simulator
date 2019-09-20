@@ -17,7 +17,7 @@ import params
 import spike_plot
 
 from components.synapse import TwinMemristive as TM
-from components.neuron import LIF
+from components.neuron import IAF
 from components.neuron import InputNeuron
 from components.rng import RNG
 
@@ -46,7 +46,7 @@ line = line.split(' ')
 line = [int(i) for i in line]
 
 input_neuron = InputNeuron("INP", line)
-neuron = LIF("N0", 0.6, 0.598, 1, params.get("cap"))
+neuron = IAF("N0", 0.6, 0.598, 1, params.get("cap"))
 input_synapse = TM(delay=0, pre=input_neuron, post=neuron)
 neuron.input_synapses.append(input_synapse)
 
