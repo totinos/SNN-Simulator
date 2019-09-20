@@ -1,11 +1,13 @@
 import json
 
-default_fn = "default_params.json"
-user_fn = "user_params.json"
+default_fn = "params/default_params.json"
+user_fn = "params/user_params.json"
 
 ###########################################################
+#                                                         #
 # Setup step involves copying default params to user      #
 # params file and changing user-defined params            #
+#                                                         #
 ###########################################################
 def setup(user_params={}):
     data = {}
@@ -24,21 +26,23 @@ def setup(user_params={}):
         f.write(jstr)
 
     return
-    
 
-# TODO --> Make the get function so that it can retrieve
-#          multiple parameters at once for efficiency
 
 ###########################################################
-# Get a parameter value from the json file                #
+#                                                         #
+# Get requested parameter values from the json file       #
+#                                                         #
 ###########################################################
-def get(par):
+def get(*pars):
     data = {}
 
     # Read user-defined parameters into a dict
     with open(user_fn) as f:
         data = json.load(f)
 
-    # Return the requested parameter value
-    return data[par]
-
+    # Return the requested parameter values
+    # List comprehension only works for more than one arg
+    if len(pars) == 1:
+        return data[pars[0]]
+    else:
+        return [data[par] for par in pars]

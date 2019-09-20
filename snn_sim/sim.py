@@ -2,7 +2,7 @@ import sys
 import collections
 #from snn_components import *
 
-from spike_plotter import *
+#from spike_plotter import *
 
 # THIS FILE RUNS THE SIMULATOR MAYBE???
 
@@ -14,6 +14,7 @@ from spike_plotter import *
 ########## Testing out new structure here ##########
 
 import params
+import spike_plot
 
 from components.synapse import TwinMemristive as TM
 from components.neuron import LIF
@@ -28,7 +29,11 @@ params.setup(user_params)
 
 print(params.get("LRS"))
 print(params.get("VDD"))
+print(params.get("Vrst"))
 
+p1, p2, p3, p4, p5 = params.get("VDD", "VSS", "tper", "cycles", "cap")
+num = (p1 - p2)/2 + p2
+print(num)
 
 
 input_file = sys.argv[2]
@@ -55,6 +60,9 @@ for clk in range(SIM_CYCLES-2):
 print(input_synapse.activity)
 print(neuron.Vmem)
 print(neuron.fire)
+
+# sp = spike_plot.SpikePlot()
+# sp.plot(neuron.fire)
 
 exit()
 
