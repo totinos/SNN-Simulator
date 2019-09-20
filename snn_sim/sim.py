@@ -17,6 +17,7 @@ import params
 
 from components.synapse import TwinMemristive as TM
 from components.neuron import LIF
+from components.neuron import InputNeuron
 from components.rng import RNG
 
 user_params = {
@@ -28,8 +29,33 @@ params.setup(user_params)
 print(params.get("LRS"))
 print(params.get("VDD"))
 
-n = LIF()
-n.accumulate(1)
+
+
+input_file = sys.argv[2]
+with open(input_file, "r") as f:
+    lines = f.readlines()
+
+line = lines[0].replace(' \n', '')
+line = line.replace('\n', '')
+line = line.split(' ')
+line = [int(i) for i in line]
+
+input_neuron = InputNeuron("INP", line)
+neuron = LIF("N0", 0.6, 0.598, 1, params.get("cap"))
+input_synapse = TM(delay=0, pre=input_neuron, post=neuron)
+neuron.input_synapses.append(input_synapse)
+
+
+SIM_CYCLES = len(line)
+
+for clk in range(SIM_CYCLES-2):
+    input_synapse.propagate_spikes(clk)
+    neuron.accumulate(clk)
+
+print(input_synapse.activity)
+print(neuron.Vmem)
+print(neuron.fire)
+
 exit()
 
 ####################################################

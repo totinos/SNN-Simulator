@@ -30,6 +30,7 @@ class LIF:
         self.tper = params.get("tper")
         self.VDD = params.get("VDD")
         self.VSS = params.get("VSS")
+        self.GND = (self.VDD - self.VSS)/2 + self.VSS
         self.cycles = params.get("cycles")
         self.Cmem = cap
         self.refractory = rf
@@ -46,8 +47,6 @@ class LIF:
             # TODO --> When the neuron is FIRING or IDLE
             return
         
-        print("About to do cool neuron stuff")
-
         for synapse in self.input_synapses:
             if synapse.activity[clk] != 0:
 
@@ -61,7 +60,7 @@ class LIF:
                     self.Vmem[clk] = self.VDD
                 if self.Vmem[clk] < self.Vth:
                     self.fire[clk+1] = 1
-                    self.Vmem[clk+1] = Vrst
+                    self.Vmem[clk+1] = self.GND
                     self.refractory_cycles_left = self.refractory
                     return
             

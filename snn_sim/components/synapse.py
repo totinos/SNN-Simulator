@@ -11,14 +11,19 @@ class TwinMemristive:
         self.pre = pre
         self.post = post
         self.Gmax = 1/params.get("LRS") - 1/params.get("HRS")
+        self.G = np.ones(params.get("cycles")) * self.Gmax
+        self.activity = np.zeros(params.get("cycles"))
         
         print("Synapse created!")
-        print("self.Gmax:", self.Gmax)
-        # print(LRS)
-        # print(HRS)
-        # print(cycles)
-        # print(clk_per_del)
 
-    def do_stuff(self, clk):
-        pass
-        
+        self.VDD = params.get("VDD")
+        self.VSS = params.get("VSS")
+        self.GND = (self.VDD - self.VSS)/2 + self.VSS
+
+    def propagate_spikes(self, clk):
+        if (self.pre is not None):
+            current = (self.VDD - self.GND) * self.G[clk]
+            #print("current:", current)
+            self.activity[clk+self.delay] = self.pre.fire[clk] * current
+            #print("activity cycle:", clk+self.delay)
+            #print("activity:", self.pre.fire[clk] * current)
