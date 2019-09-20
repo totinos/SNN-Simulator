@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 # This is a new file
 
-class SpikePlotter:
+class SpikePlot:
     
     def __init__(self):
         self.x = None
