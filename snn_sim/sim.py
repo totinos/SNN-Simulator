@@ -14,26 +14,23 @@ import collections
 ########## Testing out new structure here ##########
 
 import params
-import spike_plot
+
+from sim.network import Network
 
 from components.synapse import TwinMemristive as TM
 from components.neuron import IntegrateAndFire as IAF
 from components.neuron import InputNeuron
 from components.rng import RNG
 
-user_params = {
-    "Vrst": 0.6
-}
 
-params.setup(user_params)
+net = Network()
+net.define_inputs(sys.argv[2])
+net.print_inputs()
+#net.build("sim/net_iris.txt")
+net.build("net_iris_2.txt")
+net.print_connectivity()
 
-print(params.get("LRS"))
-print(params.get("VDD"))
-print(params.get("Vrst"))
-
-p1, p2, p3, p4, p5 = params.get("VDD", "VSS", "tper", "cycles", "cap")
-num = (p1 - p2)/2 + p2
-print(num)
+exit()
 
 
 input_file = sys.argv[2]
@@ -44,28 +41,6 @@ line = lines[0].replace(' \n', '')
 line = line.replace('\n', '')
 line = line.split(' ')
 line = [int(i) for i in line]
-
-print(line)
-exit()
-
-input_neuron = InputNeuron("INP", line)
-neuron = IAF("N0", 0.6, 0.598, 1, params.get("cap"))
-input_synapse = TM(delay=0, pre=input_neuron, post=neuron)
-neuron.input_synapses.append(input_synapse)
-
-
-SIM_CYCLES = len(line)
-
-for clk in range(SIM_CYCLES-2):
-    input_synapse.propagate_spikes(clk)
-    neuron.accumulate(clk)
-
-print(input_synapse.activity)
-print(neuron.Vmem)
-print(neuron.fire)
-
-# sp = spike_plot.SpikePlot()
-# sp.plot(neuron.fire)
 
 exit()
 
