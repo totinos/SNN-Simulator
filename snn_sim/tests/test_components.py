@@ -5,10 +5,10 @@ from components.neuron import IntegrateAndFire as IAF
 from components.neuron import InputNeuron as IN
 
 
-class TestNetworkComponents(unittest.TestCase):
+class TestComponents(unittest.TestCase):
     
 
-    def test_network_construction(self):
+    def test_component_connectivity(self):
         input_array = [12345]
         
         # Create a simple network
@@ -24,7 +24,7 @@ class TestNetworkComponents(unittest.TestCase):
         self.assertEqual(synapse, neuron.input_synapses[0])
 
 
-    def test_network_operation(self):
+    def test_component_operation(self):
         
         # Example network input
         input_array = [ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 ]
@@ -45,7 +45,7 @@ class TestNetworkComponents(unittest.TestCase):
         self.assertEqual(neuron.fire[3], input_array[2])
 
 
-    def test_network_reset(self):
+    def test_component_reset(self):
         
         # Example network input
         input_array = [ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 ]
@@ -77,7 +77,7 @@ class TestNetworkComponents(unittest.TestCase):
         self.assertTrue(synapse.activity[2] == 0)
         
 
-    def test_network_operation_after_reset(self):
+    def test_component_operation_after_reset(self):
 
         # Example network input
         input_array = [ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 ]
