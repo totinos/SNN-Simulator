@@ -17,7 +17,7 @@ import params
 import spike_plot
 
 from components.synapse import TwinMemristive as TM
-from components.neuron import IAF
+from components.neuron import IntegrateAndFire as IAF
 from components.neuron import InputNeuron
 from components.rng import RNG
 
@@ -44,6 +44,9 @@ line = lines[0].replace(' \n', '')
 line = line.replace('\n', '')
 line = line.split(' ')
 line = [int(i) for i in line]
+
+print(line)
+exit()
 
 input_neuron = InputNeuron("INP", line)
 neuron = IAF("N0", 0.6, 0.598, 1, params.get("cap"))

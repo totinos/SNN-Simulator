@@ -14,13 +14,17 @@ class TwinMemristive:
         self.G = np.ones(params.get("cycles")) * self.Gmax
         self.activity = np.zeros(params.get("cycles"))
         
-        print("Synapse created!")
-
         self.VDD = params.get("VDD")
         self.VSS = params.get("VSS")
         self.GND = (self.VDD - self.VSS)/2 + self.VSS
 
+    def reset(self):
+        self.G = np.ones(params.get("cycles")) * self.Gmax
+        self.activity = np.zeros(params.get("cycles"))
+
     def propagate_spikes(self, clk):
+# TODO --> Avoid accessing "clk+1" index or higher
+# TODO --> Use self.G[clk+self.delay] for conductance
         if (self.pre is not None):
             current = (self.VDD - self.GND) * self.G[clk]
             #print("current:", current)

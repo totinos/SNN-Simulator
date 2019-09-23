@@ -13,8 +13,8 @@ class InputNeuron:
         self.fire = fire
 
 
-class IAF:
-
+class IntegrateAndFire:
+# TODO --> Avoid accessing arrays at "clk+1" index
     def __init__(self, name="", Vmem=params.get("Vrst"), Vth=params.get("Vth"), rf=0, cap=params.get("cap")):
         """Creates an Integrate-and-Fire neuron with the given parameters.
 
@@ -40,7 +40,11 @@ class IAF:
         # Neuron state information
         self.Vmem = np.ones(self.cycles) * Vmem
         self.fire = np.zeros(self.cycles)
-        print("Neuron created")
+
+    def reset(self):
+        self.Vmem = np.ones(self.cycles) * self.GND
+        self.fire = np.zeros(self.cycles)
+        self.refractory_cycles_left = 0
 
     def accumulate(self, clk):
         if self.refractory_cycles_left > 0:
