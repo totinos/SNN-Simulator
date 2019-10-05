@@ -75,3 +75,61 @@ class IntegrateAndFire:
         # Keeps accumulation of Vmem updated
         self.Vmem[clk+1] = self.Vmem[clk]
 
+
+class IntegrateAndFire2:
+# TODO --> Avoid accessing arrays at "clk+1" index
+    def __init__(self, name="", Vmem=params.get("Vrst"), Vth=params.get("Vth"), rf=0, cap=params.get("cap")):
+        """Creates an Integrate-and-Fire neuron with the given parameters.
+
+        Args:
+            name - A string uniquely identifying the neuron.
+            Vmem - The initial value of the membrane voltage.
+            Vth  - The threshold of the neuron.
+            rf   - The refractory period of the neuron (in cycles).
+            cap  - The membrane capacitance of the neuron.
+        """
+        self.name = str(name)
+        self.Vth = Vth
+        self.tper = params.get("tper")
+        self.VDD = params.get("VDD")
+        self.VSS = params.get("VSS")
+        self.GND = (self.VDD - self.VSS)/2 + self.VSS
+        self.cycles = params.get("cycles")
+        self.Cmem = cap
+        self.refractory = rf
+        self.refractory_cycles_left = 0
+
+        # Neuron state information
+        self.Vmem = np.ones(self.cycles) * Vmem
+        self.fire = np.zeros(self.cycles)
+
+    def reset(self):
+        self.Vmem = np.ones(self.cycles) * self.GND
+        self.fire = np.zeros(self.cycles)
+        self.refractory_cycles_left = 0
+
+    def accumulate(self, clk, input_current):
+        if self.refractory_cycles_left > 0:
+            # TODO --> When the neuron is FIRING or IDLE
+            return
+       
+        # TODO --> When the neuron is ACCUMULATING or IDLE (is current 0 or not?)
+
+        delta_Vmem = self.tper * input_current / self.Cmem
+        self.Vmem[clk] -= delta_Vmem
+        if self.Vmem[clk] < self.VSS:
+            self.Vmem[clk] = self.VSS
+        if self.Vmem[clk] > self.VDD:
+            self.Vmem[clk] = self.VDD
+        if self.Vmem[clk] < self.Vth:
+            # TODO --> Index out of bounds errors?
+            self.fire[clk+1] = 1
+            self.Vmem[clk+1] = self.GND
+            self.refractory_cycles_left = self.refractory
+            return
+
+        # TODO --> Leak term to make LIF??
+
+        # Keeps accumulation of Vmem updated
+        self.Vmem[clk+1] = self.Vmem[clk]
+

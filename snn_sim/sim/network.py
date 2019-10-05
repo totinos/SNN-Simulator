@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+
 import argparse
 
 import params
@@ -45,6 +47,7 @@ class Network:
                 
                 unique_id = line[2]
                 threshold = line[3]
+                # TODO --> Fix the threshold calculation here
                 threshold = 599e-3
                 x = line[4]
                 y = line[5]
@@ -54,10 +57,10 @@ class Network:
                 if line[1] == "I":
                     input_neuron = IN("Input", self.input_arrays[int(unique_id)])
                     input_synapse = TM(Mp=LRS, Mn=HRS, delay=0, pre=input_neuron, post=self.neuron_dict[unique_id])
+                    self.synapse_list.append(input_synapse)
                     self.neuron_dict[unique_id].input_synapses.append(input_synapse)
                 else:
                     pass
-
 
             elif line[0] == "|":
                 pre = self.neuron_dict[line[3]]
@@ -70,10 +73,15 @@ class Network:
                 self.synapse_list.append(syn)
                 post.input_synapses.append(syn)
 
-
-                print("S")
             else:
-                print("other...")
+                pass
+
+    # TODO --> Should this be here??????
+    def prune(self):
+        pass
+
+    def viz(self):
+        pass
 
     def print_connectivity(self):
         print("----------")
@@ -84,11 +92,57 @@ class Network:
         print("----------")
 
     def run(self):
-        pass
+        SIM_CYCLES = len(self.input_arrays[0])
+        print(SIM_CYCLES)
+        for clk in range(SIM_CYCLES):
+            for synapse in self.synapse_list:
+                synapse.propagate_spikes(clk)
+            for key, neuron in self.neuron_dict.items():
+                neuron.accumulate(clk)
 
     def reset(self):
-        pass
+        for synapse in self.synapse_list:
+            synapse.reset()
+        for key, neuron in self.neuron_dict.items():
+            neuron.reset()
 
+    # TODO --> This is hardcoded for now, change it
     def plot(self):
-        pass
+        plot_spikes(self.input_arrays[0], self.input_arrays[1], self.input_arrays[2], self.input_arrays[3], self.input_arrays[4], self.neuron_dict["5"].fire, self.neuron_dict["6"].fire, self.neuron_dict["7"].fire)
 
+        
+
+def plot_spikes(*args):
+
+    max_len = 0
+    num_waveforms = len(args)
+    waveforms = []
+
+    for arg in args:
+#             if not isinstance(arg, list):
+#                 print("ERROR OCCURRED DURING PLOTTING")
+#                 return 
+        data = np.repeat(arg, 2)
+        if (len(data) > max_len):
+            max_len = len(data)
+        waveforms.append(data)
+
+    # Set up time axis and clock signal
+    clock = 1 - np.arange(max_len) % 2
+    t = 0.5 * np.arange(max_len)
+
+    # Append 0s to signals that are shorter than the longest signal
+    for i in range(len(waveforms)):
+        len_diff = max_len - len(waveforms[i])
+        if len_diff > 0:
+            waveforms[i] = np.append(waveforms[i], np.zeros(len_diff))
+
+    # Reverse order of signals so first argument is top signal (below clock)
+    waveforms = np.flip(waveforms, 0)
+
+    # Plot the signals
+    for i in range(len(waveforms)):
+        plt.step(t, waveforms[i] + 2*i, where="post")
+    plt.step(t, clock + 2*num_waveforms, where="post")
+    plt.show()
+    return

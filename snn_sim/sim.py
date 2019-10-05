@@ -17,10 +17,10 @@ import params
 
 from sim.network import Network
 
-from components.synapse import TwinMemristive as TM
-from components.neuron import IntegrateAndFire as IAF
-from components.neuron import InputNeuron
-from components.rng import RNG
+# from components.synapse import TwinMemristive as TM
+# from components.neuron import IntegrateAndFire as IAF
+# from components.neuron import InputNeuron
+# from components.rng import RNG
 
 
 net = Network()
@@ -29,6 +29,10 @@ net.print_inputs()
 #net.build("sim/net_iris.txt")
 net.build("net_iris_2.txt")
 net.print_connectivity()
+net.run()
+net.print_inputs()
+net.plot()
+
 
 exit()
 
