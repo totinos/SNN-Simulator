@@ -9,6 +9,9 @@ from components.synapse import TwinMemristive as TM
 from components.neuron import IntegrateAndFire as IAF
 from components.neuron import InputNeuron as IN
 
+from components.synapse import TwinMemristive2 as TM2
+from components.neuron import IntegrateAndFire2 as IAF2
+
 class Network:
     def __init__(self):
         self.neuron_dict = {}
@@ -75,6 +78,29 @@ class Network:
 
             else:
                 pass
+
+    def build2(self, network_file):
+        with open(network_file, "r") as f:
+            lines = f.readlines()
+        HRS, LRS = params.get("HRS", "LRS")
+
+        for line in lines[1:18]:
+            line = line.replace("\n", "")
+            line = line.split(" ")
+
+            # Read a network
+            if line[0] == "+":
+                if line[1] == "I":
+                    print("N: I")
+                elif line[1] == "O":
+                    print("N: O")
+
+                unique_id = line[2]
+            elif line[0] == "|":
+                pass
+            else:
+                pass
+
 
     # TODO --> Should this be here??????
     def prune(self):

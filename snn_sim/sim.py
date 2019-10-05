@@ -17,10 +17,33 @@ import params
 
 from sim.network import Network
 
-# from components.synapse import TwinMemristive as TM
-# from components.neuron import IntegrateAndFire as IAF
-# from components.neuron import InputNeuron
-# from components.rng import RNG
+from components.neuron import InputNeuron as IN
+from components.synapse import TwinMemristive2 as TM2
+from components.neuron import IntegrateAndFire2 as IAF2
+
+inputs = [0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1]
+
+synapse = TM2()
+neuron1 = IN("INP", inputs)
+neuron2 = IAF2(name="NEU", refractory=1)
+
+SIM_CYCLES = len(inputs)
+print(SIM_CYCLES)
+print(inputs)
+for clk in range(SIM_CYCLES):
+    fire = neuron1.fire[clk]
+    current = synapse.propagate_spikes(clk, fire)
+    fire2 = neuron2.accumulate(clk, current)
+    print("Fire:", fire2)
+
+print(neuron1.fire)
+print(synapse.activity)
+print()
+print(neuron2.Vmem)
+print(neuron2.fire)
+
+
+exit()
 
 
 net = Network()

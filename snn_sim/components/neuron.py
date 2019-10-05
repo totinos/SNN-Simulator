@@ -48,6 +48,7 @@ class IntegrateAndFire:
 
     def accumulate(self, clk):
         if self.refractory_cycles_left > 0:
+            self.refractory_cycles_left -= 1
             # TODO --> When the neuron is FIRING or IDLE
             return
         
@@ -89,7 +90,7 @@ class IntegrateAndFire2:
             cap  - The membrane capacitance of the neuron.
         """
         self.name = str(name)
-        self.Vth = Vth
+        self.Vth = params.get("Vth")
         self.tper = params.get("tper")
         self.VDD = params.get("VDD")
         self.VSS = params.get("VSS")
@@ -100,7 +101,7 @@ class IntegrateAndFire2:
         self.refractory_cycles_left = 0
 
         # Neuron state information
-        self.Vmem = np.ones(self.cycles) * Vmem
+        self.Vmem = np.ones(self.cycles) * self.MID
         self.fire = np.zeros(self.cycles)
 
     def reset(self):
@@ -110,8 +111,9 @@ class IntegrateAndFire2:
 
     def accumulate(self, clk, input_current):
         if self.refractory_cycles_left > 0:
+            self.refractory_cycles_left -= 1
             # TODO --> When the neuron is FIRING or IDLE
-            return
+            return 0
        
         # TODO --> When the neuron is ACCUMULATING or IDLE (is current 0 or not?)
 
@@ -126,10 +128,11 @@ class IntegrateAndFire2:
             self.fire[clk+1] = 1
             self.Vmem[clk+1] = self.MID
             self.refractory_cycles_left = self.refractory
-            return
+            return 1
 
         # TODO --> Leak term to make LIF??
 
         # Keeps accumulation of Vmem updated
         self.Vmem[clk+1] = self.Vmem[clk]
+        return 0
 
