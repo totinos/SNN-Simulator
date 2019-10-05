@@ -50,6 +50,7 @@ class TwinMemristive2:
         self.activity = np.zeros(self.cycles)
 
     # TODO --> Index out of bounds errors w/ accessing clk+delay??
+    #          Adding a simple shift register for delay could fix this
     def propagate_spikes(self, clk, input_fire):
         current = (self.VDD - self.MID) * self.G[clk]
         self.activity[clk+self.delay] = input_fire * current

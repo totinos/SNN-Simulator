@@ -125,6 +125,7 @@ class IntegrateAndFire2:
             self.Vmem[clk] = self.VDD
         if self.Vmem[clk] < self.Vth:
             # TODO --> Index out of bounds errors?
+            #          Adding a simple flip flop could fix this
             self.fire[clk+1] = 1
             self.Vmem[clk+1] = self.MID
             self.refractory_cycles_left = self.refractory
