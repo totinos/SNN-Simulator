@@ -78,7 +78,7 @@ class IntegrateAndFire:
 
 class IntegrateAndFire2:
 # TODO --> Avoid accessing arrays at "clk+1" index
-    def __init__(self, name="", Vmem=params.get("Vrst"), Vth=params.get("Vth"), rf=0, cap=params.get("cap")):
+    def __init__(self, name="", refractory=0, cap=params.get("cap")):
         """Creates an Integrate-and-Fire neuron with the given parameters.
 
         Args:
@@ -93,10 +93,10 @@ class IntegrateAndFire2:
         self.tper = params.get("tper")
         self.VDD = params.get("VDD")
         self.VSS = params.get("VSS")
-        self.GND = (self.VDD - self.VSS)/2 + self.VSS
+        self.MID = (self.VDD - self.VSS)/2 + self.VSS
         self.cycles = params.get("cycles")
         self.Cmem = cap
-        self.refractory = rf
+        self.refractory = refractory
         self.refractory_cycles_left = 0
 
         # Neuron state information
@@ -104,7 +104,7 @@ class IntegrateAndFire2:
         self.fire = np.zeros(self.cycles)
 
     def reset(self):
-        self.Vmem = np.ones(self.cycles) * self.GND
+        self.Vmem = np.ones(self.cycles) * self.MID
         self.fire = np.zeros(self.cycles)
         self.refractory_cycles_left = 0
 
@@ -124,7 +124,7 @@ class IntegrateAndFire2:
         if self.Vmem[clk] < self.Vth:
             # TODO --> Index out of bounds errors?
             self.fire[clk+1] = 1
-            self.Vmem[clk+1] = self.GND
+            self.Vmem[clk+1] = self.MID
             self.refractory_cycles_left = self.refractory
             return
 

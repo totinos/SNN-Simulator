@@ -31,3 +31,26 @@ class TwinMemristive:
             self.activity[clk+self.delay] = self.pre.fire[clk] * current
             #print("activity cycle:", clk+self.delay)
             #print("activity:", self.pre.fire[clk] * current)
+
+class TwinMemristive2:
+    def __init__(self, Mp=params.get("LRS"), Mn=params.get("HRS"), delay=0):
+        self.Mp = Mp
+        self.Mn = Mn
+        self.delay = delay
+        self.VDD = params.get("VDD")
+        self.VSS = params.get("VSS")
+        self.MID = (self.VDD - self.VSS)/2 + self.VSS
+        self.cycles = params.get("cycles")
+        self.G = np.ones(self.cycles) * (1/self.Mp - 1/self.Mn)
+        self.activity = np.zeros(self.cycles)
+
+    def reset(self):
+        # TODO --> self.Mp & Mn will likely not be initial values after learning
+        self.G = np.ones(self.cycles) * (1/self.Mp - 1/self.Mn)
+        self.activity = np.zeros(self.cycles)
+
+    # TODO --> Index out of bounds errors w/ accessing clk+delay??
+    def propagate_spikes(self, clk, input_fire):
+        current = (self.VDD - self.MID) * self.G[clk]
+        self.activity[clk+self.delay] = input_fire * current
+        return self.activity[clk]
