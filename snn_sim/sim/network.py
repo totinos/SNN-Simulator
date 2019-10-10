@@ -19,6 +19,8 @@ class Network:
         self.neuron_dict = {}
         self.synapse_list = []
         self.input_arrays = []
+
+        self.net = nx.DiGraph()
     
     def define_inputs(self, input_file):
         with open(input_file, "r") as f:
@@ -103,6 +105,10 @@ class Network:
             else:
                 pass
 
+    # TODO --> Add neurons and synapses to the network
+    # TODO --> Maybe this should be separate functions (add_synapse & add_neuron)?
+    def add(self):
+        pass
 
     # TODO --> Should this be here??????
     def prune(self):

@@ -36,7 +36,7 @@ class TwinMemristive2:
     def __init__(self, Mp=params.get("LRS"), Mn=params.get("HRS"), delay=0):
         self.Mp = Mp
         self.Mn = Mn
-        self.delay = delay
+        self.delay = [0]*(delay)
         self.VDD = params.get("VDD")
         self.VSS = params.get("VSS")
         self.MID = (self.VDD - self.VSS)/2 + self.VSS
@@ -51,7 +51,22 @@ class TwinMemristive2:
 
     # TODO --> Index out of bounds errors w/ accessing clk+delay??
     #          Adding a simple shift register for delay could fix this
-    def propagate_spikes(self, clk, input_fire):
+    def propagate_spikes(self, clk, input_spike):
+
+        delay_len = len(self.delay)
         current = (self.VDD - self.MID) * self.G[clk]
-        self.activity[clk+self.delay] = input_fire * current
+        processed_spike = input_spike
+
+        if delay_len > 0:
+            #self.activity[clk] = self.delay[delay_len-1] * current
+            processed_spike = self.delay[delay_len-1]
+            for i in reversed(range(1, delay_len)):
+                self.delay[i] = self.delay[i-1]
+            self.delay[0] = input_spike
+        
+        self.activity[clk] = processed_spike * current
+
+        # TODO --> Determine whether the synapse is idle or active here
+
+        #self.activity[clk+self.delay] = input_spike * current
         return self.activity[clk]

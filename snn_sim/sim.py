@@ -43,8 +43,12 @@ print(neuron2.Vmem)
 print(neuron2.fire)
 
 
-exit()
+net = Network()
+net.define_inputs(sys.argv[2])
+net.print_inputs()
+net.build_from_file("net_iris_2.txt")
 
+exit()
 
 net = Network()
 net.define_inputs(sys.argv[2])
@@ -54,7 +58,7 @@ net.build("net_iris_2.txt")
 net.print_connectivity()
 net.run()
 net.print_inputs()
-net.plot()
+#net.plot()
 
 
 exit()
