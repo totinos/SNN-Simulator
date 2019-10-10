@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+import networkx as nx
+
 import argparse
 
 import params
@@ -79,7 +81,7 @@ class Network:
             else:
                 pass
 
-    def build2(self, network_file):
+    def build_from_file(self, network_file):
         with open(network_file, "r") as f:
             lines = f.readlines()
         HRS, LRS = params.get("HRS", "LRS")

@@ -21,7 +21,7 @@ from components.neuron import InputNeuron as IN
 from components.synapse import TwinMemristive2 as TM2
 from components.neuron import IntegrateAndFire2 as IAF2
 
-inputs = [0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1]
+inputs = [0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0]
 
 synapse = TM2()
 neuron1 = IN("INP", inputs)

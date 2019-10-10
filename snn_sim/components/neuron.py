@@ -101,8 +101,13 @@ class IntegrateAndFire2:
         self.refractory_cycles_left = 0
 
         # Neuron state information
+        #self.Vmem = self.MID
         self.Vmem = np.ones(self.cycles) * self.MID
         self.fire = np.zeros(self.cycles)
+
+        # Neuron firing flop
+        self.firing_flop_state = 0
+        
 
     def reset(self):
         self.Vmem = np.ones(self.cycles) * self.MID
@@ -110,30 +115,35 @@ class IntegrateAndFire2:
         self.refractory_cycles_left = 0
 
     def accumulate(self, clk, input_current):
+
+        # Preserve Vmem state from previous cycle
+        self.Vmem[clk] = self.MID if clk == 0 else self.Vmem[clk-1]
+       
+        # Check firing flop to see if a fire has been queued
+        if self.firing_flop_state == 1:
+            self.firing_flop_state = 0
+            self.fire[clk] = 1
+            self.Vmem[clk] = self.MID
+
         if self.refractory_cycles_left > 0:
             self.refractory_cycles_left -= 1
             # TODO --> When the neuron is FIRING or IDLE
-            return 0
        
-        # TODO --> When the neuron is ACCUMULATING or IDLE (is current 0 or not?)
-
-        delta_Vmem = self.tper * input_current / self.Cmem
-        self.Vmem[clk] -= delta_Vmem
-        if self.Vmem[clk] < self.VSS:
-            self.Vmem[clk] = self.VSS
-        if self.Vmem[clk] > self.VDD:
-            self.Vmem[clk] = self.VDD
-        if self.Vmem[clk] < self.Vth:
-            # TODO --> Index out of bounds errors?
-            #          Adding a simple flip flop could fix this
-            self.fire[clk+1] = 1
-            self.Vmem[clk+1] = self.MID
-            self.refractory_cycles_left = self.refractory
-            return 1
+        else:
+            
+            # TODO --> When the neuron is ACCUMULATING or IDLE (is current 0 or not?)
+        
+            delta_Vmem = self.tper * input_current / self.Cmem
+            self.Vmem[clk] -= delta_Vmem
+            if self.Vmem[clk] < self.VSS:
+                self.Vmem[clk] = self.VSS
+            if self.Vmem[clk] > self.VDD:
+                self.Vmem[clk] = self.VDD
+            if self.Vmem[clk] < self.Vth:
+                self.firing_flop_state = 1
+                self.refractory_cycles_left = self.refractory
 
         # TODO --> Leak term to make LIF??
 
-        # Keeps accumulation of Vmem updated
-        self.Vmem[clk+1] = self.Vmem[clk]
-        return 0
+        return self.fire[clk]
 
